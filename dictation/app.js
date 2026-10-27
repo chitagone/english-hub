@@ -489,6 +489,12 @@ function shuffle(a) {
 
 /* ── practice card ─────────────────────────────────────────── */
 
+/* show/hide BOTH next buttons (sticky top bar + bottom) together */
+const setNext = (v) => {
+  $('#btn-next').hidden = !v;
+  $('#btn-next-top').hidden = !v;
+};
+
 function cur() { return S.queue[S.i]; }
 
 function loadCard() {
@@ -510,7 +516,7 @@ function loadCard() {
   $('#area-book').hidden = S.answer !== 'book';
   $('#result-card').hidden = true;
   $('#grade-row').hidden = true;
-  $('#btn-next').hidden = true;
+  setNext(false);
   const inp = $('#type-in');
   inp.value = '';
   inp.classList.remove('done-ok', 'done-bad');
@@ -593,8 +599,8 @@ function reveal(diffData, selfAssess) {
     const inp = $('#type-in');
     inp.readOnly = true;
     inp.classList.add(diffData.ok ? 'done-ok' : 'done-bad');
-    $('#btn-next').hidden = false;
-    $('#btn-next').focus();
+    setNext(true);
+    $('#btn-next-top').focus();   // top button: no scrolling down
   } else {
     $('#grade-row').hidden = false;
   }
@@ -720,6 +726,7 @@ function bindPractice() {
   $('#btn-right').addEventListener('click', () => { grade(true); afterSelf(); });
   $('#btn-wrong').addEventListener('click', () => { grade(false); afterSelf(); });
   $('#btn-next').addEventListener('click', next);
+  $('#btn-next-top').addEventListener('click', next);
 
   // global keys (only when no interactive element is focused)
   document.addEventListener('keydown', (e) => {
@@ -758,9 +765,9 @@ function bindPractice() {
 
 function afterSelf() {
   $('#grade-row').hidden = true;
-  $('#btn-next').hidden = false;
+  setNext(true);
   $('#verdict').className = S.lastSelfOk ? 'verdict ok' : 'verdict bad';
-  $('#btn-next').focus();
+  $('#btn-next-top').focus();
 }
 
 /* patch grade() to remember self-assessment for afterSelf */

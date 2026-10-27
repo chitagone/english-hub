@@ -389,7 +389,19 @@ button:focus-visible, input:focus-visible, kbd:focus-visible {
 
 /* ══════════════════ PRACTICE ══════════════════ */
 
-.prac-top { gap: 12px; flex-wrap: wrap; }
+.prac-top {
+  gap: 12px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  margin: calc(clamp(14px, 3vw, 28px) * -1 + 6px) calc(clamp(14px, 3.5vw, 26px) * -1) 4px;
+  padding: 10px clamp(14px, 3.5vw, 26px) 10px clamp(14px, 3.5vw, 26px);
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1.5px solid var(--line);
+}
 .prac-mid { flex: 1; display: flex; flex-direction: column; gap: 6px; }
 .prac-count { font-weight: 800; font-size: 13.5px; color: var(--mut); text-align: center; }
 .prac-count b { color: var(--ink); font-size: 15px; }
@@ -476,7 +488,21 @@ button:focus-visible, input:focus-visible, kbd:focus-visible {
   padding: 16px 18px 18px;
 }
 .aa-label { font-family: var(--disp); font-weight: 700; font-size: 16px; margin-bottom: 9px; }
-.type-row { display: flex; gap: 9px; align-items: stretch; }
+.next-top {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--disp);
+  font-weight: 700; font-size: 15px;
+  color: #fff;
+  background: linear-gradient(150deg, var(--violet), var(--violet-deep));
+  border-radius: 12px;
+  padding: 7px 15px;
+  box-shadow: 0 4px 14px -6px color-mix(in srgb, var(--violet) 80%, transparent);
+  animation: popIn .22s cubic-bezier(.2,.8,.3,1) both;
+}
+.next-top .ic { width: 15px; height: 15px; fill: currentColor; }
+@keyframes popIn { from { transform: scale(.8); opacity: 0; } }
+
+.type-row { display: flex; gap: 9px; align-items: flex-end; }
 .type-box {
   flex: 1;
   position: relative;
@@ -485,17 +511,17 @@ button:focus-visible, input:focus-visible, kbd:focus-visible {
 #type-in {
   flex: 1;
   font-family: var(--mono);
-  font-size: clamp(18px, 2.8vw, 21px);
-  line-height: 1.45;
-  min-height: 64px;
-  max-height: 40vh;
+  font-size: clamp(19px, 3vw, 22px);
+  line-height: 1.5;
+  min-height: 118px;
+  max-height: 45vh;
   resize: none;
   overflow-y: auto;
   color: var(--ink);
   background: var(--card-soft);
   border: 2px solid var(--line);
   border-radius: 14px;
-  padding: 15px 46px 15px 16px;
+  padding: 16px 50px 16px 16px;
   -webkit-user-select: text;
   user-select: text;
   touch-action: auto;             /* never block Apple Pencil / Scribble */

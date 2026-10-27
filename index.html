@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>English Hub ✿✎ — speaking &amp; dictation practice</title>
+<meta name="description" content="One home for your English practice apps: SpeakEasy speaking practice and WriteRight dictation, built from your own books.">
+<meta name="theme-color" content="#F0EEE8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='28' height='28' rx='8' fill='%236E50C9'/%3E%3Ctext x='16' y='22' font-size='15' text-anchor='middle' fill='%23fff' font-family='sans-serif'%3E%E2%9C%8E%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"></noscript>
+<style>
+:root {
+  --bg: #F0EEE8;
+  --bg-deep: #E7E4DC;
+  --card: #FFFFFF;
+  --ink: #23201B;
+  --mut: #6B655A;
+  --line: #DBD5C9;
+  --teal: #0C7265;
+  --teal-soft: #E0F0EC;
+  --coral: #E2562E;
+  --coral-soft: #FCEAE3;
+  --violet: #6E50C9;
+  --violet-deep: #553BA6;
+  --violet-soft: #EEE9FB;
+  --amber: #8A5D0C;
+  --amber-soft: #F8EED8;
+  --shadow: 0 12px 34px -16px rgba(35, 32, 27, .3);
+  --disp: 'Baloo 2', 'Trebuchet MS', sans-serif;
+  --body: 'Nunito', 'Segoe UI', sans-serif;
+}
+.dark {
+  --bg: #12100D;
+  --bg-deep: #0C0B09;
+  --card: #1C1915;
+  --ink: #EDE9E1;
+  --mut: #A39C8E;
+  --line: #2C2820;
+  --teal: #41C0AA;
+  --teal-soft: #14312B;
+  --coral: #FF7E5F;
+  --coral-soft: #3A211A;
+  --violet: #A18BEA;
+  --violet-deep: #BCACF2;
+  --violet-soft: #251F3D;
+  --amber: #E3B04B;
+  --amber-soft: #33290F;
+  --shadow: 0 12px 34px -16px rgba(0, 0, 0, .6);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--body);
+  background:
+    radial-gradient(1100px 460px at 88% -10%, color-mix(in srgb, var(--teal) 9%, transparent), transparent 60%),
+    radial-gradient(900px 420px at -8% 108%, color-mix(in srgb, var(--violet) 9%, transparent), transparent 55%),
+    var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  min-height: 100dvh;
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+}
+.screen {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: clamp(16px, 3vw, 30px) clamp(14px, 3.5vw, 26px) 40px;
+  display: flex; flex-direction: column;
+  min-height: 100vh; min-height: 100dvh;
+  animation: in .35s cubic-bezier(.2,.8,.3,1) both;
+}
+@keyframes in { from { opacity: 0; transform: translateY(10px); } }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.brand { font-family: var(--disp); font-weight: 800; font-size: clamp(21px, 3.4vw, 26px); }
+.brand .dot { color: var(--coral); }
+.icon-btn {
+  width: 40px; height: 40px;
+  display: grid; place-items: center;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 13px;
+  color: inherit;
+  cursor: pointer;
+}
+.icon-btn:focus-visible { outline: 3px solid color-mix(in srgb, var(--violet) 60%, transparent); outline-offset: 2px; }
+.ic { width: 19px; height: 19px; fill: currentColor; }
+
+.hero { padding: clamp(22px, 5vw, 40px) 0 8px; }
+.kicker {
+  display: inline-block;
+  font-weight: 800; font-size: 12.5px; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--violet); background: var(--violet-soft);
+  border-radius: 999px; padding: 4px 12px;
+}
+.hero h1 {
+  font-family: var(--disp); font-weight: 800;
+  font-size: clamp(32px, 6.4vw, 50px);
+  line-height: 1.08; margin: 12px 0 10px;
+}
+.hero h1 .speak { color: var(--teal); }
+.hero h1 .write { color: var(--violet); }
+.hero p { color: var(--mut); font-size: clamp(14.5px, 2vw, 16.5px); max-width: 52ch; }
+.hero p b { color: var(--ink); }
+
+.apps {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 30px;
+}
+.app-card {
+  position: relative;
+  display: flex; flex-direction: column; gap: 6px;
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: 24px;
+  padding: 22px 20px 20px;
+  box-shadow: var(--shadow);
+  text-decoration: none;
+  color: inherit;
+  transition: transform .16s, box-shadow .16s, border-color .16s;
+}
+.app-card:hover { transform: translateY(-3px); border-color: var(--ac); }
+.app-card:active { transform: scale(.985); }
+.app-card:focus-visible { outline: 3px solid var(--ac); outline-offset: 3px; }
+
+.app-card.se { --ac: var(--teal); --acs: var(--teal-soft); }
+.app-card.wr { --ac: var(--violet); --acs: var(--violet-soft); }
+
+.app-ico {
+  width: 52px; height: 52px;
+  display: grid; place-items: center;
+  border-radius: 17px;
+  font-size: 26px;
+  background: var(--acs);
+  margin-bottom: 6px;
+}
+.app-name { font-family: var(--disp); font-weight: 800; font-size: 24px; }
+.app-tag { color: var(--mut); font-weight: 700; font-size: 14px; }
+
+.app-stats { display: flex; flex-wrap: wrap; gap: 7px; margin: 12px 0 4px; }
+.st {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--acs);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-weight: 800; font-size: 12.5px;
+}
+.st small { font-weight: 700; font-size: 11px; color: var(--mut); }
+.st b { font-family: var(--disp); font-size: 14px; }
+
+.app-feats { list-style: none; margin: 4px 0 14px; }
+.app-feats li {
+  color: var(--mut); font-weight: 600; font-size: 13px;
+  padding: 2.5px 0 2.5px 22px;
+  position: relative;
+}
+.app-feats li::before {
+  content: '✓';
+  position: absolute; left: 2px;
+  color: var(--ac); font-weight: 800;
+}
+
+.app-go {
+  margin-top: auto;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--disp); font-weight: 700; font-size: 16.5px;
+  color: #fff;
+  background: var(--ac);
+  border-radius: 14px;
+  padding: 11px 18px;
+}
+
+.foot {
+  margin-top: 34px;
+  text-align: center;
+  color: var(--mut); font-weight: 600; font-size: 12.5px;
+}
+
+@media (max-width: 640px) {
+  .apps { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<section class="screen">
+  <header class="top">
+    <div class="brand">English Hub <span class="dot">✿</span><span style="color:var(--violet)">✎</span></div>
+    <button id="btn-theme" class="icon-btn" title="Light / dark theme" aria-label="Toggle light or dark theme">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>
+    </button>
+  </header>
+
+  <div class="hero">
+    <p class="kicker">one home · two apps</p>
+    <h1><span class="speak">Speak</span> it.<br><span class="write">Write</span> it. Own it.</h1>
+    <p>Both practice apps built from <b>your own books</b> — Master Vocab, the Conversation Pattern Books and Grammar. Pick how you want to train today.</p>
+  </div>
+
+  <div class="apps">
+    <a class="app-card se" href="speaking-practice/index.html">
+      <div class="app-ico">✿</div>
+      <div class="app-name">SpeakEasy</div>
+      <div class="app-tag">Question &amp; answer speaking practice</div>
+      <div class="app-stats">
+        <span class="st">🔥 <b id="se-streak">0</b><small>day streak</small></span>
+        <span class="st">🗣 <b id="se-total">0</b><small>cards spoken</small></span>
+        <span class="st" id="se-tricky-wrap" hidden>⭐ <b id="se-tricky">0</b><small>tricky</small></span>
+      </div>
+      <ul class="app-feats">
+        <li>Answer out loud or practise asking</li>
+        <li>Pattern decks + grammar quiz</li>
+        <li>Spaced review keeps cards fresh</li>
+      </ul>
+      <span class="app-go">Start speaking →</span>
+    </a>
+
+    <a class="app-card wr" href="dictation/index.html">
+      <div class="app-ico">✎</div>
+      <div class="app-name">WriteRight</div>
+      <div class="app-tag">Listen &amp; write dictation</div>
+      <div class="app-stats">
+        <span class="st">✓ <b id="wr-pct">—</b><small>accuracy</small></span>
+        <span class="st">🎧 <b id="wr-done">0</b><small>items done</small></span>
+        <span class="st" id="wr-tricky-wrap" hidden>🔁 <b id="wr-tricky">0</b><small>tricky waiting</small></span>
+      </div>
+      <ul class="app-feats">
+        <li>Words &amp; sentences from Master Vocab</li>
+        <li>Article mode: dictate your own text</li>
+        <li>Type it or write in your book · Apple Pencil</li>
+      </ul>
+      <span class="app-go">Start dictation →</span>
+    </a>
+  </div>
+
+  <p class="foot">Progress is saved on this device · theme follows you between apps</p>
+</section>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (s) => document.querySelector(s);
+
+  /* ── shared theme: hub + WriteRight + SpeakEasy ─────────── */
+  const jparse = (v, d) => { try { return JSON.parse(v) ?? d; } catch { return d; } };
+
+  function readSe() { return jparse(localStorage.getItem('speakeasy-v1'), {}); }
+  function writeSe(se) { try { localStorage.setItem('speakeasy-v1', JSON.stringify(se)); } catch {} }
+
+  function readTheme() {
+    const wr = jparse(localStorage.getItem('writeRight.theme'), null);
+    if (wr === 'dark' || wr === 'light') return wr;
+    const t = (readSe().set || {}).theme;
+    if (t === 'dark' || t === 'light') return t;
+    return (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  function applyTheme(t) {
+    document.documentElement.classList.toggle('dark', t === 'dark');
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', t === 'dark' ? '#12100D' : '#F0EEE8');
+  }
+
+  function setTheme(t) {
+    applyTheme(t);
+    try { localStorage.setItem('writeRight.theme', JSON.stringify(t)); } catch {}
+    const se = readSe();
+    se.set = Object.assign({}, se.set, { theme: t });
+    writeSe(se);
+  }
+
+  applyTheme(readTheme());
+  $('#btn-theme').addEventListener('click', () => {
+    setTheme(document.documentElement.classList.contains('dark') ? 'light' : 'dark');
+  });
+
+  /* ── live stats from each app's storage ─────────────────── */
+  function seStreak(days) {
+    const set = new Set(days || []);
+    if (!set.size) return 0;
+    const iso = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    const now = new Date();
+    if (!set.has(iso(now))) {
+      now.setDate(now.getDate() - 1);
+      if (!set.has(iso(now))) return 0;
+    }
+    let n = 0;
+    while (set.has(iso(now))) { n++; now.setDate(now.getDate() - 1); }
+    return n;
+  }
+
+  try {
+    const se = readSe();
+    $('#se-streak').textContent = seStreak(se.days);
+    $('#se-total').textContent = Number(se.total || 0).toLocaleString();
+    const star = (se.star || []).length;
+    $('#se-tricky-wrap').hidden = !star;
+    $('#se-tricky').textContent = star;
+  } catch { /* storage unavailable — placeholders stay */ }
+
+  try {
+    const st = jparse(localStorage.getItem('writeRight.stats.v1'), {});
+    const tk = jparse(localStorage.getItem('writeRight.tricky.v1'), {});
+    const total = Number(st.total || 0);
+    $('#wr-pct').textContent = total ? Math.round((st.right / total) * 100) + '%' : '—';
+    $('#wr-done').textContent = total.toLocaleString();
+    const n = Object.keys(tk || {}).length;
+    $('#wr-tricky-wrap').hidden = !n;
+    $('#wr-tricky').textContent = n;
+  } catch { /* storage unavailable */ }
+})();
+</script>
+</body>
+</html>

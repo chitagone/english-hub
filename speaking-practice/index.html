@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SpeakEasy ✿ — question & answer speaking practice</title>
+<meta name="description" content="Topic-based speaking practice: answer prompts or ask the question, then compare with the pattern. Built from your Conversation Pattern Books and Storytelling Patterns.">
+<meta name="theme-color" content="#E9F1EB">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='%23E2562E'%3E%3Cellipse cx='16' cy='8' rx='5' ry='6'/%3E%3Cellipse cx='16' cy='24' rx='5' ry='6'/%3E%3Cellipse cx='8' cy='16' rx='6' ry='5'/%3E%3Cellipse cx='24' cy='16' rx='6' ry='5'/%3E%3C/g%3E%3Ccircle cx='16' cy='16' r='4' fill='%230C7265'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="style.css?v=7">
+</head>
+<body>
+
+<!-- ══════════════════ HOME ══════════════════ -->
+<section id="screen-home" class="screen">
+  <header class="top">
+    <div class="brand">SpeakEasy <span class="flower" aria-hidden="true">✿</span></div>
+    <div class="top-right">
+      <a class="icon-btn" href="../index.html" title="English Hub" aria-label="Back to the English Hub" style="text-decoration:none">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 3l9 8h-3v9h-5v-6h-2v6H6v-9H3z"/></svg>
+      </a>
+      <button id="btn-streak" class="chip" title="Your practice streak">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 2c1 4-3 5-3 9a3 3 0 0 0 6 .4C15 13 17 14 17 16.5A5 5 0 0 1 7 17c0-4 3-5.5 4-9 .4 1.4 2 2 2 3.5C14 9 13 5 12 2z"/></svg>
+        <b id="streak-n">0</b><span class="chip-sub">day streak</span>
+      </button>
+      <button id="btn-theme" class="icon-btn" title="Light / dark theme" aria-label="Toggle light or dark theme">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>
+      </button>
+      <button id="btn-settings" class="icon-btn" title="Settings" aria-label="Open settings">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm9 4a7.6 7.6 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7.7 7.7 0 0 0-2-1.2L16 3h-4l-.4 2.6a7.7 7.7 0 0 0-2 1.2l-2.5-1-2 3.4 2.1 1.6a7.6 7.6 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7.7 7.7 0 0 0 2 1.2L8 21h4l.4-2.6a7.7 7.7 0 0 0 2-1.2l2.5 1 2-3.4-2.1-1.6c.1-.4.2-.8.2-1.2z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="hero">
+    <p class="hero-kicker">✿ speaking practice</p>
+    <h1>Speak first.<br>Study after.</h1>
+    <p class="hero-sub">Pick a deck, <b class="you">answer out loud</b> or practise asking, then flip to compare with the pattern.</p>
+  </div>
+
+  <div class="shelf-head">
+    <div>
+      <div class="shelf-label">Your decks</div>
+      <p class="shelf-sub">Built from your own pattern books</p>
+    </div>
+    <div class="shelf-total" id="foot-total">—</div>
+  </div>
+
+  <div class="shelf" id="shelf"></div>
+
+  <div id="tricky-quick" class="tricky-quick" hidden>
+    <button id="btn-tricky" class="ghost-cta">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 3l2.7 5.6 6.3.8-4.6 4.3 1.2 6.2L12 17l-5.6 2.9 1.2-6.2L3 9.4l6.3-.8z"/></svg>
+      <span id="tricky-text"><b id="tricky-n">0</b> tricky cards waiting</span>
+      <span class="ghost-cta-arrow" aria-hidden="true">→</span>
+    </button>
+  </div>
+
+  <div class="quiz-entry-wrap" id="quiz-entry-wrap" hidden>
+    <div class="shelf-label">Test yourself</div>
+    <button id="btn-quiz" class="quiz-entry">
+      <span class="quiz-entry-ico" aria-hidden="true">?</span>
+      <span class="quiz-entry-copy">
+        <b>Grammar quiz</b>
+        <small id="quiz-entry-sub">72 lessons · 50 questions each</small>
+      </span>
+      <span class="quiz-entry-go" aria-hidden="true">→</span>
+    </button>
+  </div>
+
+  <div class="how" aria-label="How it works">
+    <div class="how-step">
+      <span class="how-n">1</span>
+      <b>Pick a deck</b>
+      <small>Choose the parts you want to practise.</small>
+    </div>
+    <div class="how-step">
+      <span class="how-n">2</span>
+      <b>Speak it out loud</b>
+      <small>Answer the prompt or ask the question.</small>
+    </div>
+    <div class="how-step">
+      <span class="how-n">3</span>
+      <b>Flip &amp; compare</b>
+      <small>Check the pattern, then rate yourself.</small>
+    </div>
+  </div>
+
+  <p class="home-note"><span aria-hidden="true">✿</span> Everything stays on this device — no account, no tracking.</p>
+
+  <footer class="foot">
+    <span>Practice makes fluent</span>
+  </footer>
+</section>
+
+<!-- ══════════════════ DECK ══════════════════ -->
+<section id="screen-deck" class="screen screen-deck" hidden>
+  <header class="deck-top">
+    <button id="btn-deck-back" class="icon-btn" title="Back to decks (Esc)" aria-label="Back to decks">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="deck-top-text">
+      <span class="deck-crumb">All decks</span>
+      <b id="deck-top-title">Deck</b>
+    </div>
+    <button id="btn-deck-theme" class="icon-btn" title="Light / dark theme" aria-label="Toggle light or dark theme">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>
+    </button>
+    <button id="btn-deck-settings" class="icon-btn" title="Settings" aria-label="Open settings">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm9 4a7.6 7.6 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7.7 7.7 0 0 0-2-1.2L16 3h-4l-.4 2.6a7.7 7.7 0 0 0-2 1.2l-2.5-1-2 3.4 2.1 1.6a7.6 7.6 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7.7 7.7 0 0 0 2 1.2L8 21h4l.4-2.6a7.7 7.7 0 0 0 2-1.2l2.5 1 2-3.4-2.1-1.6c.1-.4.2-.8.2-1.2z"/></svg>
+    </button>
+  </header>
+
+  <div class="deck-hero" id="deck-hero">
+    <div class="dh-main">
+      <div class="dh-emblem" id="deck-emblem" aria-hidden="true">✿</div>
+      <div class="dh-copy">
+        <h1 class="dh-title" id="deck-title">Deck</h1>
+        <p class="dh-tag" id="deck-tag"></p>
+      </div>
+    </div>
+    <div class="dh-stats">
+      <div class="dh-stat"><b id="dh-cards">0</b><span>cards</span></div>
+      <div class="dh-stat"><b id="dh-parts">0</b><span>parts</span></div>
+      <div class="dh-stat"><b id="dh-due">0</b><span>ready now</span></div>
+    </div>
+    <div class="dh-progress">
+      <div class="dh-bar"><i id="deck-bar"></i></div>
+      <span id="deck-pct">0% practised</span>
+    </div>
+  </div>
+
+  <section class="panel mode-panel" aria-labelledby="mode-heading">
+    <div class="panel-head">
+      <div>
+        <h2 id="mode-heading">Practice mode</h2>
+        <p class="panel-sub" id="mode-note">Choose what you want to practise</p>
+      </div>
+    </div>
+    <div class="mode-grid" id="mode-picker" role="group" aria-labelledby="mode-heading">
+      <button type="button" class="mode-card on" data-mode="answer" aria-pressed="true">
+        <span class="mode-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4.5 5h10A2.5 2.5 0 0 1 17 7.5v4a2.5 2.5 0 0 1-2.5 2.5H9.3L5 17.5v-3.6A2.5 2.5 0 0 1 2.8 11.5v-4A2.5 2.5 0 0 1 5.3 5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M6.5 8.5h6.5M6.5 11.5h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        </span>
+        <span class="mode-copy"><b>Answer</b><small>They speak — you reply</small></span>
+        <span class="mode-n"><b id="mode-answer-n">0</b><small>cards</small></span>
+      </button>
+      <button type="button" class="mode-card" data-mode="ask" aria-pressed="false">
+        <span class="mode-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.7 2.2c-.8.5-1.3 1.1-1.3 2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="17" r="1.1" fill="currentColor"/></svg>
+        </span>
+        <span class="mode-copy"><b>Ask</b><small>You ask the question</small></span>
+        <span class="mode-n"><b id="mode-ask-n">0</b><small>cards</small></span>
+      </button>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="parts-heading">
+    <div class="panel-head">
+      <div>
+        <h2 id="parts-heading">Choose parts</h2>
+        <p class="panel-sub" id="parts-note">All parts selected</p>
+      </div>
+      <div class="panel-actions">
+        <button id="btn-all-parts" class="link-btn">All</button>
+        <button id="btn-no-parts" class="link-btn">None</button>
+      </div>
+    </div>
+    <div class="parts-search" id="parts-search-wrap" hidden>
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m16.5 16.5 4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input id="parts-search" type="search" placeholder="Search parts…" autocomplete="off" aria-label="Search parts">
+      <button id="btn-clear-search" class="search-clear" type="button" aria-label="Clear search" hidden>✕</button>
+    </div>
+    <div class="parts-list" id="parts-list"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="round-heading">
+    <div class="panel-head">
+      <div>
+        <h2 id="round-heading">Round setup</h2>
+        <p class="panel-sub">Keep it short and speak every card</p>
+      </div>
+    </div>
+
+    <div class="opt-group">
+      <span class="opt-label" id="len-label">Cards per round</span>
+      <div class="seg" id="seg-len" role="group" aria-labelledby="len-label">
+        <button type="button" data-v="10">10</button>
+        <button type="button" data-v="20">20</button>
+        <button type="button" data-v="40">40</button>
+        <button type="button" data-v="0">All</button>
+      </div>
+    </div>
+
+    <div class="switch-group">
+      <label class="switch">
+        <input type="checkbox" id="opt-shuffle" checked>
+        <span class="track" aria-hidden="true"></span>
+        <span class="switch-txt"><b>Shuffle</b><small>Mix the selected parts</small></span>
+      </label>
+      <label class="switch">
+        <input type="checkbox" id="opt-due">
+        <span class="track" aria-hidden="true"></span>
+        <span class="switch-txt"><b>Due first</b><small>Start with cards you have not seen</small></span>
+      </label>
+    </div>
+  </section>
+
+  <div class="deck-actions">
+    <div class="start-note" id="start-note"></div>
+    <button id="btn-start" class="cta">
+      <span>Start speaking</span>
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M5 12h12m-5-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</section>
+
+<!-- ══════════════════ PRACTICE ══════════════════ -->
+<section id="screen-practice" class="screen" hidden>
+  <header class="p-top">
+    <button id="btn-exit" class="icon-btn" title="Back to the deck (Esc)" aria-label="Back to the deck">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="p-mid">
+      <span class="p-deck" id="p-deck">Practice</span>
+      <div class="p-progress" aria-hidden="true"><div id="p-bar"></div></div>
+    </div>
+    <div class="p-count" id="p-count" aria-live="polite">1 / 20</div>
+    <button id="btn-star" class="icon-btn star-btn" title="Mark as tricky (S)" aria-label="Mark as tricky" aria-pressed="false">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 3l2.7 5.6 6.3.8-4.6 4.3 1.2 6.2L12 17l-5.6 2.9 1.2-6.2L3 9.4l6.3-.8z"/></svg>
+    </button>
+  </header>
+
+  <div class="p-body">
+    <div class="stage">
+      <div class="deck-shadow s1" aria-hidden="true"></div>
+      <div class="deck-shadow s2" aria-hidden="true"></div>
+      <div class="card3d" id="card" tabindex="0" role="button" aria-label="Flashcard — press Space to flip">
+        <div class="card-inner">
+        <!-- FRONT -->
+        <div class="face front">
+          <div class="face-scroll">
+            <div class="kbadge-row">
+              <span class="kbadge" id="c-kbadge">Answer this</span>
+              <span class="eq" id="eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            </div>
+            <div class="c-meta" id="c-part"></div>
+            <h2 class="c-q" id="c-q"></h2>
+            <div class="c-sit" id="c-sit"></div>
+            <div class="c-line-box" id="c-line-box">
+              <span class="c-line-label" id="c-line-label">They say</span>
+              <p class="c-line" id="c-line"></p>
+            </div>
+            <div class="c-cue" id="c-cue" hidden></div>
+            <div class="c-hint" id="c-hint"></div>
+          </div>
+          <div class="flip-nudge" aria-hidden="true">
+            <span class="nudge-desktop">Tap the card or press Space to flip</span>
+            <span class="nudge-touch">Tap the card to flip</span>
+          </div>
+        </div>
+        <!-- BACK -->
+        <div class="face back">
+          <div class="face-scroll" id="back-scroll">
+            <div class="b-head">
+              <span class="kbadge back-badge" id="b-kbadge">Pattern</span>
+              <span class="c-topic" id="b-topic"></span>
+            </div>
+            <div id="back-body"></div>
+          </div>
+          <div id="back-fade" class="scroll-fade" aria-hidden="true"></div>
+          <div class="flip-nudge" aria-hidden="true">
+            <span class="nudge-desktop">Tap the card or press Space to see the question</span>
+            <span class="nudge-touch">Tap the card to see the question</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls" id="controls">
+    <button id="btn-hear" class="ctl" title="Read the question again (R)">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span id="hear-label">Hear it</span>
+    </button>
+    <button id="btn-rec" class="ctl rec" title="Record your answer, then compare">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21m-3 0h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span id="rec-label">Record</span>
+    </button>
+    <button id="btn-flip" class="ctl primary" title="Flip the card (Space)">
+      <span id="flip-label">Flip</span>
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 8h13l-3-3M20 16H7l3 3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+
+  <div id="rec-play" class="rec-play" hidden>
+    <span class="rp-label">Your take:</span>
+    <button id="btn-play-mine" class="ctl small">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg><span>Play</span>
+    </button>
+    <button id="btn-play-model" class="ctl small teal">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span id="model-btn-label">Model answer</span>
+    </button>
+  </div>
+
+  <div class="rate-slot">
+    <p class="rate-hint" id="rate-hint">Flip the card to see the pattern and rate yourself</p>
+    <div id="ratebar" class="ratebar" hidden>
+      <span class="rate-q">How did that feel?</span>
+      <div class="rate-btns">
+        <button class="rate r-again" data-rate="again"><b>Again</b><small>I struggled</small></button>
+        <button class="rate r-good" data-rate="good"><b>Good</b><small>got there</small></button>
+        <button class="rate r-easy" data-rate="easy"><b>Easy</b><small>nailed it</small></button>
+      </div>
+    </div>
+  </div>
+  </div>
+</section>
+
+<!-- ══════════════════ SUMMARY ══════════════════ -->
+<section id="screen-summary" class="screen" hidden>
+  <header class="sum-top">
+    <button id="btn-sum-back" class="icon-btn" title="Back to the deck" aria-label="Back to the deck">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <span class="sum-top-title" id="sum-deck">Practice</span>
+  </header>
+
+  <div class="sum-wrap">
+    <div class="sum-flower" aria-hidden="true">✿</div>
+    <h2 class="sum-title">Round complete</h2>
+    <p class="sum-sub" id="sum-sub">Nice work — keep the streak going.</p>
+    <div class="sum-ring">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <circle cx="60" cy="60" r="52" class="ring-bg"/>
+        <circle cx="60" cy="60" r="52" class="ring-fg" id="ring-fg"/>
+      </svg>
+      <div class="ring-num"><b id="sum-pct">0%</b><span>smooth</span></div>
+    </div>
+    <div class="sum-rows">
+      <div class="sum-row again"><span>Again</span><b id="sum-again">0</b></div>
+      <div class="sum-row good"><span>Good</span><b id="sum-good">0</b></div>
+      <div class="sum-row easy"><span>Easy</span><b id="sum-easy">0</b></div>
+    </div>
+    <div class="sum-streak" id="sum-streak"></div>
+    <div class="sum-actions">
+      <button id="btn-again-cards" class="ghost-cta" hidden>Repeat the Again cards</button>
+      <button id="btn-back-deck" class="cta">Back to deck</button>
+      <button id="btn-home" class="ghost-cta plain">All decks</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ GRAMMAR QUIZ: TOPICS ══════════════════ -->
+<section id="screen-quiz-home" class="screen screen-quiz-home" hidden>
+  <header class="deck-top">
+    <button id="btn-quiz-home-back" class="icon-btn" title="Back to decks" aria-label="Back to decks">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="deck-top-text">
+      <span class="deck-crumb">SpeakEasy</span>
+      <b>Grammar quiz</b>
+    </div>
+    <button id="btn-quiz-theme" class="icon-btn" title="Light / dark theme" aria-label="Toggle light or dark theme">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>
+    </button>
+  </header>
+
+  <div class="quiz-hero">
+    <div class="quiz-hero-ico" aria-hidden="true">?</div>
+    <div class="quiz-hero-copy">
+      <h1>Grammar quiz</h1>
+      <p>Choose a lesson and answer 50 shuffled questions. Each answer shows the correct version and one short note from the rule.</p>
+    </div>
+  </div>
+
+  <div class="quiz-actions">
+    <button id="btn-quiz-random" class="cta quiz-random">
+      <span>Random 50 questions</span>
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M5 12h12m-5-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <span class="quiz-summary" id="quiz-summary">72 lessons · 3,600 questions</span>
+  </div>
+
+  <div class="parts-search quiz-search">
+    <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m16.5 16.5 4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <input id="quiz-search" type="search" placeholder="Search lessons…" autocomplete="off" aria-label="Search lessons">
+    <button id="btn-quiz-search-clear" class="search-clear" type="button" aria-label="Clear search" hidden>✕</button>
+  </div>
+
+  <div class="quiz-topic-list" id="quiz-topic-list"></div>
+
+  <p class="quiz-reference-note">Chapters 67–72 are cheat-sheet and learning-method pages, so they are reading-only and have no quiz.</p>
+</section>
+
+<!-- ══════════════════ GRAMMAR QUIZ: QUESTION ══════════════════ -->
+<section id="screen-quiz" class="screen screen-quiz" hidden>
+  <header class="p-top quiz-top">
+    <button id="btn-quiz-exit" class="icon-btn" title="Back to lessons (Esc)" aria-label="Back to lessons">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="p-mid">
+      <span class="p-deck" id="qz-crumb">Grammar quiz</span>
+      <div class="p-progress" aria-hidden="true"><div id="qz-bar"></div></div>
+    </div>
+    <div class="p-count" id="qz-count" aria-live="polite">1 / 20</div>
+    <div class="qz-score" title="Correct answers so far"><span aria-hidden="true">★</span> <b id="qz-score">0</b></div>
+  </header>
+
+  <div class="quiz-stage">
+    <div class="quiz-card">
+      <div class="quiz-card-top">
+        <span class="kbadge" id="qz-badge">Multiple choice</span>
+        <span class="quiz-hint" id="qz-hint"></span>
+      </div>
+      <div class="quiz-focus" id="qz-focus" hidden></div>
+      <h2 class="quiz-prompt" id="qz-prompt"></h2>
+      <div class="quiz-options" id="qz-options"></div>
+      <div class="quiz-feedback" id="qz-feedback" hidden aria-live="polite"></div>
+      <div class="quiz-card-actions">
+        <button id="btn-quiz-check" class="cta" disabled>Check answer</button>
+        <button id="btn-quiz-next" class="cta" hidden>Next question</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="quiz-kbd-note">Tip: press <b>1–4</b> to choose, <b>Enter</b> to check, <b>Esc</b> to leave.</p>
+</section>
+
+<!-- ══════════════════ GRAMMAR QUIZ: RESULT ══════════════════ -->
+<section id="screen-quiz-result" class="screen screen-quiz-result" hidden>
+  <header class="sum-top">
+    <button id="btn-quiz-result-back" class="icon-btn" title="Back to lessons" aria-label="Back to lessons">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <span class="sum-top-title" id="qz-result-crumb">Grammar quiz</span>
+  </header>
+
+  <div class="sum-wrap quiz-result-wrap">
+    <div class="sum-flower" aria-hidden="true">✿</div>
+    <h2 class="sum-title" id="qz-result-title">Quiz complete</h2>
+    <p class="sum-sub" id="qz-result-sub"></p>
+
+    <div class="sum-ring">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <circle cx="60" cy="60" r="52" class="ring-bg"/>
+        <circle cx="60" cy="60" r="52" class="ring-fg" id="qz-ring-fg"/>
+      </svg>
+      <div class="ring-num"><b id="qz-pct">0%</b><span>correct</span></div>
+    </div>
+
+    <div class="sum-rows">
+      <div class="sum-row good"><span>Correct</span><b id="qz-correct">0</b></div>
+      <div class="sum-row again"><span>Wrong</span><b id="qz-wrong">0</b></div>
+      <div class="sum-row easy"><span>Best</span><b id="qz-best">0</b></div>
+    </div>
+
+    <div class="quiz-review" id="quiz-review"></div>
+
+    <div class="sum-actions">
+      <button id="btn-quiz-retry" class="cta">Try again</button>
+      <button id="btn-quiz-other" class="ghost-cta plain">Choose another lesson</button>
+      <button id="btn-quiz-home" class="ghost-cta plain">All decks</button>
+    </div>
+  </div>
+</section>
+
+
+<div id="drawer-scrim" hidden aria-hidden="true"></div>
+<aside id="drawer" class="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+  <div class="drawer-head">
+    <b id="drawer-title">Settings</b>
+    <button id="btn-close-drawer" class="icon-btn" aria-label="Close settings">✕</button>
+  </div>
+  <label class="opt opt-check big">
+    <input type="checkbox" id="set-tts">
+    <span>Read cards aloud <small>The app reads each prompt aloud as it appears</small></span>
+  </label>
+  <label class="opt big">
+    <span>Voice</span>
+    <select id="set-voice"><option value="">Loading voices…</option></select>
+  </label>
+  <label class="opt big">
+    <span>Speed <b id="set-rate-n">0.9×</b></span>
+    <input type="range" id="set-rate" min="0.6" max="1.2" step="0.05" value="0.9">
+  </label>
+  <label class="opt big">
+    <span>Theme</span>
+    <select id="set-theme">
+      <option value="auto">Match my system</option>
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+    </select>
+  </label>
+  <div class="drawer-foot">
+    <button id="btn-reset" class="link-btn danger">Reset all progress</button>
+  </div>
+</aside>
+
+<div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
+
+<script src="data.js"></script>
+<script src="quiz-data.js?v=5"></script>
+<script src="app.js?v=7"></script>
+</body>
+</html>

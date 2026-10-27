@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 
@@ -161,6 +161,10 @@
       <button id="btn-voice-p" class="icon-btn sm" title="Voice &amp; speed" aria-label="Choose the speaking voice">
         <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a3.5 3.5 0 0 0-2-3.2v6.4a3.5 3.5 0 0 0 2-3.2zm-2-7v2.1a5 5 0 0 1 0 9.8V19a7 7 0 0 0 0-14z"/></svg>
       </button>
+      <button id="btn-next-top" class="next-top" hidden title="Next card (Enter)">
+        Next
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M9 5l7 7-7 7z"/></svg>
+      </button>
     </div>
   </header>
 
@@ -188,8 +192,8 @@
     <label class="aa-label" for="type-in">Write what you hear</label>
     <div class="type-row">
       <div class="type-box">
-        <textarea id="type-in" rows="1" lang="en" autocomplete="off" autocapitalize="none"
-          autocorrect="off" spellcheck="false" placeholder="Type — or write here with your Apple Pencil ✎"></textarea>
+        <textarea id="type-in" rows="3" lang="en" autocomplete="off" autocapitalize="none"
+          autocorrect="off" spellcheck="false" placeholder="✎ Write here with your Apple Pencil — or type"></textarea>
         <button id="btn-clear" class="clear-btn" title="Clear" aria-label="Clear the writing box">
           <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 5.7 18.3 4.3 16.9 9.7 12 4.3 5.7 5.7 4.3l5.5 5.4 6.3-6.3z"/></svg>
         </button>
@@ -314,6 +318,6 @@
 </div>
 
 <script src="data.js?v=1"></script>
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>

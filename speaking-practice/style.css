@@ -2248,6 +2248,64 @@ mark.slot {
 
 .tk-model-btn { align-self: center; }
 
+/* full 1-minute example: part-by-part script */
+.tk-example { display: flex; flex-direction: column; gap: 7px; }
+
+.tk-part {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: left;
+  background: var(--card-soft);
+  border: 1.5px solid var(--line);
+  border-radius: 13px;
+  padding: 10px 12px;
+  transition: border-color .13s, transform .13s;
+}
+.tk-part:hover { border-color: var(--teal); }
+.tk-part:active { transform: scale(.99); }
+
+.tk-part-n {
+  flex: none;
+  width: 24px; height: 24px;
+  display: grid; place-items: center;
+  border-radius: 8px;
+  background: var(--teal);
+  color: #fff;
+  font-family: var(--disp);
+  font-weight: 800;
+  font-size: 13px;
+  margin-top: 1px;
+}
+
+.tk-part-copy {
+  flex: 1;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--ink);
+}
+.tk-part-copy em {
+  display: block;
+  font-style: normal;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 2px;
+}
+
+.tk-part .ic {
+  flex: none;
+  width: 15px; height: 15px;
+  color: var(--teal);
+  background: var(--teal-soft);
+  border-radius: 50%;
+  padding: 3.5px;
+  margin-top: 3px;
+}
+
 /* ── beginner mode: "what to say" on the card front ────────── */
 
 .cheat {

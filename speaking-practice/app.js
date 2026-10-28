@@ -1426,15 +1426,32 @@ function renderTalkHelp() {
     .map((s) => `<button type="button" class="tk-phrase" data-say="${esc(s)}">
       <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>${esc(s)}</button>`)
     .join("");
+
+  /* full 1-minute example, part by part */
+  const parts = tkExampleParts(tk.topic);
+  $("#tk-example").innerHTML = parts.map((p, i) => `
+    <button type="button" class="tk-part" data-say="${esc(p.text)}">
+      <span class="tk-part-n" aria-hidden="true">${i + 1}</span>
+      <span class="tk-part-copy"><em>${p.lab}</em>${esc(p.text)}</span>
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>
+    </button>`).join("");
 }
 
-/* a model 25-second talk built on the current topic */
-function tkModelTalk(topic) {
+/* a full ~1-minute model talk on the current topic, in 5 labeled parts */
+function tkExampleParts(topic) {
   const t = String(topic || "").toLowerCase();
-  return `Let me tell you about ${t}. To be honest, it's something I think about quite often. `
-    + `For example, last week I was with a friend and we started talking about it, and I realized I had a lot to say. `
-    + `Sometimes it's easy, sometimes it's a little hard, but that's exactly what makes it interesting. `
-    + `So yeah — that's my one minute on ${t}.`;
+  const T = t.charAt(0).toUpperCase() + t.slice(1);
+  return [
+    { lab: "Open", text: `Let me tell you about ${t}.` },
+    { lab: "What it is", text: `${T} is something I think about quite often, actually. It's one of those everyday things that sounds simple, but when you start talking about it, there is a lot to say.` },
+    { lab: "Your story", text: `For example, last week I was with a friend and we started talking about it, and I realized I had a lot to say. I told her a short story from my own experience, and she completely understood what I meant.` },
+    { lab: "Your feeling", text: `What I like most about it is the way it connects to my daily life. Sometimes it's easy, sometimes it's a little hard, but that's exactly what makes it interesting for me.` },
+    { lab: "Close", text: `So yeah — that's my one minute on ${t}. Thanks for listening.` },
+  ];
+}
+
+function tkModelTalk(topic) {
+  return tkExampleParts(topic).map((p) => p.text).join(" ");
 }
 
 function toggleTalkHelp(force) {
@@ -2403,6 +2420,10 @@ function wire() {
     if (b) tkSay(b.dataset.say);
   });
   $("#tk-phrases").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-say]");
+    if (b) tkSay(b.dataset.say);
+  });
+  $("#tk-example").addEventListener("click", (e) => {
     const b = e.target.closest("[data-say]");
     if (b) tkSay(b.dataset.say);
   });

@@ -160,6 +160,7 @@ function backToHome() {
 }
 
 function goHome() {
+  stopAllAudio();          // never carry speech or a recording out of a screen
   if (location.hash) {
     try { history.replaceState(null, "", location.href.replace(/#.*$/, "")); } catch { /* ignore */ }
   }
@@ -170,7 +171,10 @@ function goHome() {
 }
 
 function route() {
-  if (!$("#screen-practice").hidden || !$("#screen-summary").hidden) stopSession();
+  /* leaving any active practice screen must kill speech, timers & recording */
+  if (["practice", "summary", "role", "shadow", "talk"].some((s) => !$("#screen-" + s).hidden)) {
+    stopSession();
+  }
 
   const quizMatch = /^#\/quiz(?:\/([\w-]+))?$/.exec(location.hash);
   if (quizMatch) {
@@ -957,6 +961,7 @@ function stopSession() {
 
 const rp = { queue: [], i: 0, t: 0, phase: "idle", done: false };
 let rpWatch = null;
+let rpGen = 0;           // bumped on every stop — invalidates pending onend chains
 
 function resetSessCommon(queue, title, bookId, mode) {
   sess.queue = queue;
@@ -983,16 +988,28 @@ function startRoleSession(queue, title, bookId) {
 }
 
 function stopRoleAudio() {
+  rpGen++;               // cancel() fires onend asynchronously — stale chains must die
   stopSpeaking();
   clearTimeout(rpWatch);
   rpWatch = null;
 }
 
-/* speak one line, then continue — with a watchdog if TTS never fires */
+/* speak one line, then continue — with a watchdog if TTS never fires.
+   A generation token stops the chain when you leave the screen:
+   cancel() fires onend AFTER we stopped, and a stale chain would
+   start speaking the next line on the home screen. */
 function rpSpeak(txt, voice, pitch, onDone) {
   stopSpeaking();
+  const gen = rpGen;
   let done = false;
-  const fin = () => { if (done) return; done = true; clearTimeout(rpWatch); rpWatch = null; onDone?.(); };
+  const fin = () => {
+    if (done) return;
+    done = true;
+    clearTimeout(rpWatch);
+    rpWatch = null;
+    if (gen !== rpGen) return;   // stopped meanwhile — do not continue
+    onDone?.();
+  };
   const est = Math.max(1400, (txt.length * 78) / (store.set.rate || 0.9)) + 800;
   if (canSpeak) {
     try {
@@ -1460,6 +1477,7 @@ function rateTalkReset() {
 }
 
 function stopTalkAudio() {
+  stopSpeaking();          // the model example must not follow you out of the screen
   clearInterval(tk.tick);
   tk.tick = null;
   try { if (tk.rec?.state === "live") tk.rec.stop(); } catch { /* ignore */ }
@@ -1863,10 +1881,9 @@ function quizToTopics() {
 
 function stopAllAudio() {
   stopSpeaking();
+  stopRoleAudio();      // bumps the generation token — kills pending onend chains
   stopRecPlayback();
   if (rec.state === "live" || rec.state === "starting") discardRecording(true);
-  clearTimeout(rpWatch);
-  rpWatch = null;
   stopTalkAudio();
 }
 

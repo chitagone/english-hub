@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="style.css?v=8">
+<link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
 
@@ -620,6 +620,35 @@
       <p class="tk-tip" id="tk-tip">Keep talking — don't stop for words you miss, say them another way.</p>
     </div>
 
+    <div class="tk-how-wrap">
+      <button id="btn-tk-how" class="tk-how-toggle" aria-expanded="false">
+        💡 How do I start?
+        <span class="tk-how-arrow" aria-hidden="true">▾</span>
+      </button>
+      <div class="tk-how" id="tk-how" hidden>
+        <div class="tk-how-sec">
+          <span class="tk-lab">Openers — say one of these first · tap to hear</span>
+          <div id="tk-openers" class="tk-chip-row"></div>
+        </div>
+        <div class="tk-how-sec">
+          <span class="tk-lab">Simple plan</span>
+          <ol class="tk-plan">
+            <li><b>What</b> — explain the topic in 1–2 easy sentences</li>
+            <li><b>Story</b> — one example from your life ("last week…", "when I was…")</li>
+            <li><b>Feeling</b> — why you like it / why it's hard / what you want</li>
+          </ol>
+        </div>
+        <div class="tk-how-sec" id="tk-phrases-sec" hidden>
+          <span class="tk-lab">Useful phrases for this topic — from your books</span>
+          <div id="tk-phrases" class="tk-phrase-list"></div>
+        </div>
+        <button id="btn-tk-model" class="ctl teal tk-model-btn">
+          <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>
+          <span>Hear a 25-second example</span>
+        </button>
+      </div>
+    </div>
+
     <!-- ready -->
     <div class="tk-phase" id="tk-ready">
       <button id="btn-tk-topic" class="ctl">
@@ -703,6 +732,6 @@
 
 <script src="data.js"></script>
 <script src="quiz-data.js?v=5"></script>
-<script src="app.js?v=8"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>

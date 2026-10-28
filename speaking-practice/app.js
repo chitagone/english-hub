@@ -1283,6 +1283,7 @@ function openTalk() {
   stopTalkAudio();
   if (!tk.topic) newTalkTopic();
   setTalkPhase("ready");
+  syncTalkHelpDefault();
   $("#tk-bar").style.width = "0%";
   $("#tk-count").textContent = "⏱ freestyle";
   show("talk");
@@ -1298,6 +1299,86 @@ function setTalkPhase(p) {
 function newTalkTopic() {
   tk.topic = TALK_TOPICS[Math.floor(Math.random() * TALK_TOPICS.length)] || "Your day so far";
   $("#tk-topic").textContent = tk.topic;
+  renderTalkHelp();
+}
+
+/* ── "how do I start?" helpers for the 1-minute talk ──────── */
+
+function tkSay(text, rate) {
+  if (!text || !canSpeak) { toast("This browser can't speak — try Chrome or Edge."); return; }
+  stopSpeaking();
+  try { speechSynthesis.speak(utter(text, { rate })); } catch { /* ignore */ }
+}
+
+/* openers that work with any topic — topic slot is lowercased mid-sentence */
+function tkOpeners(topic) {
+  const t = String(topic || "").toLowerCase();
+  return [
+    `Let me tell you about ${t}.`,
+    `Well, ${t} — where do I start?`,
+    `The first thing that comes to mind when I think about ${t} is…`,
+  ];
+}
+
+/* real lines from your books for this exact topic */
+function talkPhrases(topic) {
+  const key = String(topic || "").toLowerCase();
+  const out = [];
+  const seen = new Set();
+  for (const b of BOOKS) {
+    for (const p of b.parts) {
+      for (const c of p.cards) {
+        if (String(c.topic || "").toLowerCase() !== key) continue;
+        const ex0 = exItems(c.ex)[0]?.t || "";
+        /* prefer the conversation opener — it's the natural first line for this topic */
+        for (const line of [c.dlg?.[0]?.[1] || "", modelLine(c), ex0]) {
+          const s = String(line || "").trim();
+          if (s && s.split(" ").length >= 3 && !seen.has(s.toLowerCase())) {
+            seen.add(s.toLowerCase());
+            out.push(s);
+            if (out.length >= 3) return out;
+          }
+        }
+      }
+    }
+  }
+  return out;
+}
+
+function renderTalkHelp() {
+  $("#tk-openers").innerHTML = tkOpeners(tk.topic)
+    .map((s) => `<button type="button" class="tk-chip" data-say="${esc(s)}">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>${esc(s)}</button>`)
+    .join("");
+
+  const phrases = talkPhrases(tk.topic);
+  $("#tk-phrases-sec").hidden = !phrases.length;
+  $("#tk-phrases").innerHTML = phrases
+    .map((s) => `<button type="button" class="tk-phrase" data-say="${esc(s)}">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>${esc(s)}</button>`)
+    .join("");
+}
+
+/* a model 25-second talk built on the current topic */
+function tkModelTalk(topic) {
+  const t = String(topic || "").toLowerCase();
+  return `Let me tell you about ${t}. To be honest, it's something I think about quite often. `
+    + `For example, last week I was with a friend and we started talking about it, and I realized I had a lot to say. `
+    + `Sometimes it's easy, sometimes it's a little hard, but that's exactly what makes it interesting. `
+    + `So yeah — that's my one minute on ${t}.`;
+}
+
+function toggleTalkHelp(force) {
+  const box = $("#tk-how");
+  const open = force !== undefined ? force : box.hidden;
+  box.hidden = !open;
+  $("#btn-tk-how").setAttribute("aria-expanded", String(open));
+  $("#tk-how-arrow").textContent = open ? "▴" : "▾";
+}
+
+/* auto-open the helper for the first few talks, until speaking feels natural */
+function syncTalkHelpDefault() {
+  toggleTalkHelp((store.talks || 0) < 3);
 }
 
 async function startTalk() {
@@ -2246,6 +2327,16 @@ function wire() {
   $("#btn-tk-play").addEventListener("click", playTalkTake);
   $("#btn-tk-new").addEventListener("click", () => rateTalkReset());
   $$("[data-tk-rate]").forEach((b) => b.addEventListener("click", () => rateTalk(b.dataset.tkRate)));
+  $("#btn-tk-how").addEventListener("click", () => toggleTalkHelp());
+  $("#tk-openers").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-say]");
+    if (b) tkSay(b.dataset.say);
+  });
+  $("#tk-phrases").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-say]");
+    if (b) tkSay(b.dataset.say);
+  });
+  $("#btn-tk-model").addEventListener("click", () => tkSay(tkModelTalk(tk.topic)));
 
   $("#btn-sum-back").addEventListener("click", backFromRound);
   $("#btn-back-deck").addEventListener("click", backFromRound);

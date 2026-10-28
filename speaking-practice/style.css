@@ -2148,3 +2148,102 @@ mark.slot {
 /* talk entry on home: warm coral accent */
 .quiz-entry.talk:hover { border-color: var(--coral); }
 .quiz-entry.talk .quiz-entry-ico { font-size: 22px; }
+
+/* "how do I start?" helper */
+.tk-how-wrap { display: flex; flex-direction: column; gap: 0; }
+
+.tk-how-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  align-self: center;
+  font-family: var(--disp);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--amber);
+  background: var(--amber-soft);
+  border: 1.5px solid color-mix(in srgb, var(--amber) 35%, transparent);
+  border-radius: 999px;
+  padding: 9px 18px;
+  transition: transform .13s;
+}
+.tk-how-toggle:active { transform: scale(.97); }
+.tk-how-arrow { font-size: 12px; }
+
+.tk-how {
+  margin-top: 10px;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  animation: screenIn .22s ease both;
+}
+
+.tk-how-sec { display: flex; flex-direction: column; gap: 7px; }
+
+.tk-lab {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: var(--mut);
+}
+
+.tk-chip-row { display: flex; flex-direction: column; gap: 6px; }
+
+.tk-chip {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--card-soft);
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  padding: 9px 12px;
+  transition: border-color .13s, transform .13s;
+}
+.tk-chip:hover, .tk-phrase:hover { border-color: var(--teal); }
+.tk-chip:active, .tk-phrase:active { transform: scale(.985); }
+.tk-chip .ic, .tk-phrase .ic {
+  width: 15px; height: 15px; flex: none;
+  color: var(--teal);
+  background: var(--teal-soft);
+  border-radius: 50%;
+  padding: 3.5px;
+}
+
+.tk-plan {
+  margin: 0 0 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: var(--mut);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.tk-plan b { color: var(--ink); }
+
+.tk-phrase-list { display: flex; flex-direction: column; gap: 6px; }
+.tk-phrase {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: var(--teal-soft);
+  border: 1.5px solid color-mix(in srgb, var(--teal) 28%, transparent);
+  border-radius: 12px;
+  padding: 9px 12px;
+  transition: border-color .13s, transform .13s;
+}
+
+.tk-model-btn { align-self: center; }

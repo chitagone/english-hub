@@ -492,7 +492,20 @@ button:focus-visible, input:focus-visible, kbd:focus-visible {
   border-radius: 999px;
   padding: 3px 11px;
 }
-.listen-row { display: flex; gap: 8px; }
+/* example sentence with the word blanked out */
+.cloze-line {
+  width: min(52ch, 100%);
+  font-weight: 700;
+  font-size: 15.5px;
+  line-height: 1.45;
+  color: var(--ink);
+  background: var(--card-soft);
+  border: 1.5px dashed color-mix(in srgb, var(--teal) 45%, transparent);
+  border-radius: 12px;
+  padding: 9px 16px;
+  text-align: center;
+}
+.listen-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .pill {
   display: inline-flex; align-items: center; gap: 6px;
   font-weight: 800; font-size: 13px;

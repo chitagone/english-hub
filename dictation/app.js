@@ -450,7 +450,8 @@ const $$ = (s) => [...document.querySelectorAll(s)];
 function itemOf(mode, e) {
   return {
     m: mode, t: e.t, i: e.i || '', p: e.p || '', g: e.g || '', w: e.w || '',
-    ex: mode === 'sentence' ? [] : (e.ex || []),
+    gs: e.gs || [], ex: mode === 'sentence' ? [] : (e.ex || []),
+    mi: 0, ci: -1,
     hint: false,
   };
 }
@@ -504,15 +505,32 @@ const setNext = (v) => {
 function cur() { return S.queue[S.i]; }
 
 /* what the speaker says for a card: the word/sentence itself, or its meaning */
-const promptOf = (it) => (it.m === 'meaning' ? it.g : it.t);
+const promptOf = (it) => (it.m === 'meaning' ? glossesOf(it)[it.mi ?? 0] : it.t);
 
-/* hide the target word if a gloss happens to contain it */
-function maskWordInGloss(g, w) {
-  if (!g || !w) return g || '';
-  try {
-    return g.replace(new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'ig'), '___');
-  } catch { return g; }
+/* whole-word match for a word, safe for regex characters */
+function wordRe(w) {
+  if (!w) return null;
+  try { return new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'ig'); }
+  catch { return null; }
 }
+
+/* hide the target word if a text (gloss / example) happens to contain it */
+function maskWordInText(s, w) {
+  if (!s || !w) return s || '';
+  const re = wordRe(w);
+  return re ? s.replace(re, '___') : s;
+}
+
+/* every gloss of the word — the data carries extras in gs, g is the first */
+const glossesOf = (it) => (it.gs && it.gs.length ? it.gs : [it.g || '']);
+
+/* examples that contain the word — the ones we can blank out */
+const clozeExamplesOf = (it) => (it.ex || []).filter((s) => {
+  const re = wordRe(it.t);
+  if (!re) return false;
+  re.lastIndex = 0;
+  return re.test(s);
+});
 
 function loadCard() {
   const it = cur();
@@ -533,15 +551,20 @@ function loadCard() {
     (S.mix ? ' — a new voice each card' : '');
 
   // meaning mode: show the gloss (with the answer masked out of it)
-  const mb = $('#meaning-box');
-  if (it.m === 'meaning') {
-    mb.hidden = false;
-    $('#meaning-txt').textContent = maskWordInGloss(it.g, it.t);
+  const isMeaning = it.m === 'meaning';
+  $('#meaning-box').hidden = !isMeaning;
+  $('#btn-other').hidden = !isMeaning;      // cycle the word's other meanings
+  $('#btn-cloze').hidden = !isMeaning;      // example sentence with a blank
+  $('#cloze-line').hidden = true;
+  if (isMeaning) {
+    it.mi = it.mi ?? 0;
+    it.ci = it.ci ?? -1;
     const pos = $('#meaning-pos');
     if (it.p) { pos.hidden = false; pos.textContent = it.p; }
     else pos.hidden = true;
-  } else {
-    mb.hidden = true;
+    showMeaning();
+    // hide the cycle button when the word really has just one meaning
+    $('#btn-other').hidden = glossesOf(it).length < 2;
   }
 
   $('#type-label').textContent = it.m === 'meaning' ? 'Type the word it means' : 'Write what you hear';
@@ -571,6 +594,44 @@ function loadCard() {
 }
 
 function play() { speak(promptOf(cur()), S.rate); }
+
+/* ── meaning-mode helpers: cycle glosses, blanked examples ─── */
+
+function showMeaning() {
+  const it = cur();
+  const gs = glossesOf(it);
+  const idx = it.mi % gs.length;
+  $('#meaning-txt').textContent = maskWordInText(gs[idx], it.t);
+  $('#meaning-lab').textContent =
+    gs.length > 1 ? `✦ it means · ${idx + 1}/${gs.length}` : '✦ it means';
+}
+
+/* stuck? try the word's next meaning */
+function otherMeaning() {
+  const it = cur();
+  const gs = glossesOf(it);
+  if (gs.length < 2) return;
+  it.mi = ((it.mi ?? 0) + 1) % gs.length;
+  it.hint = true;                       // used help — marks the card in results
+  showMeaning();
+  speak(gs[it.mi], S.rate);             // say the new meaning too
+}
+
+/* show an example with the word blanked: 'I was ___ to call you.' */
+function showCloze() {
+  const it = cur();
+  const el = $('#cloze-line');
+  const cands = clozeExamplesOf(it);
+  it.hint = true;
+  if (!cands.length) {
+    el.textContent = 'No example with a blank for this one — try the letter hint (h).';
+    el.hidden = false;
+    return;
+  }
+  it.ci = ((it.ci ?? -1) + 1) % cands.length;
+  el.textContent = maskWordInText(cands[it.ci], it.t);
+  el.hidden = false;
+}
 
 function showHint() {
   const it = cur();
@@ -607,8 +668,9 @@ function reveal(diffData, selfAssess) {
 
   $('#reveal-text').textContent = it.t;
   $('#reveal-ipa').textContent = it.m !== 'sentence' && it.i ? it.i : '';
-  $('#reveal-gloss').innerHTML = it.g
-    ? `<b>${it.m === 'sentence' ? esc(it.w) + ' — ' : ''}${esc(it.g)}</b>`
+  const glossAll = it.m === 'meaning' ? glossesOf(it).join(' · ') : it.g;
+  $('#reveal-gloss').innerHTML = glossAll
+    ? `<b>${it.m === 'sentence' ? esc(it.w) + ' — ' : ''}${esc(glossAll)}</b>`
     : '';
 
   // word & meaning modes: a different example sentence each time this word appears
@@ -666,7 +728,7 @@ function grade(ok) {
   } else {
     S.wrong++;
     S.missed.push(it);
-    tricky[it.m + '|' + it.t] = { m: it.m, t: it.t, i: it.i, p: it.p, g: it.g, w: it.w, ex: it.ex || [] };
+    tricky[it.m + '|' + it.t] = { m: it.m, t: it.t, i: it.i, p: it.p, g: it.g, gs: it.gs || [], w: it.w, ex: it.ex || [] };
     const keys = Object.keys(tricky);
     if (keys.length > 300) delete tricky[keys[0]];
   }
@@ -745,6 +807,8 @@ function bindPractice() {
   $('#btn-play').addEventListener('click', play);
   $('#btn-slow').addEventListener('click', () => speak(promptOf(cur()), Math.max(0.4, S.rate * 0.55)));
   $('#btn-hint').addEventListener('click', showHint);
+  $('#btn-other').addEventListener('click', otherMeaning);
+  $('#btn-cloze').addEventListener('click', showCloze);
 
   $('#btn-check').addEventListener('click', checkTyped);
   $('#type-in').addEventListener('keydown', (e) => {
@@ -778,6 +842,8 @@ function bindPractice() {
     if (k === ' ' || k === 'enter') { e.preventDefault(); play(); }
     if (k === 's') speak(promptOf(cur()), Math.max(0.4, S.rate * 0.55));
     if (k === 'h') showHint();
+    if (k === 'm' && cur().m === 'meaning') otherMeaning();
+    if (k === 'e' && cur().m === 'meaning') showCloze();
     // book-mode self grade
     if (S.answer === 'book' && S.checked) {
       if (e.key === '1') $('#btn-right').click();

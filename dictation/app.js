@@ -10,6 +10,8 @@ const D = window.DICT;
 
 const TRICKY_KEY = 'writeRight.tricky.v1';
 const STATS_KEY = 'writeRight.stats.v1';
+const SRS_KEY = 'writeRight.srs.v1';
+const DAYS_KEY = 'writeRight.days.v1';
 const THEME_KEY = 'writeRight.theme';
 const VOICE_KEY = 'writeRight.voice';
 const RATE_KEY = 'writeRight.rate';
@@ -44,6 +46,41 @@ const S = {
 
 let tricky = load(TRICKY_KEY, {});
 let stats = load(STATS_KEY, { total: 0, right: 0 });
+let srs = load(SRS_KEY, {});     // key -> { item, b: box 0..6, d: due timestamp }
+let days = load(DAYS_KEY, []);   // ISO days practiced — for the streak
+
+const DAY_MS = 864e5;
+const todayStr = () => new Date().toISOString().slice(0, 10);
+
+function logPracticeDay() {
+  if (!days.includes(todayStr())) {
+    days.push(todayStr());
+    save(DAYS_KEY, days);
+  }
+}
+
+function streakDays() {
+  const set = new Set(days);
+  let s = 0;
+  const d = new Date();
+  if (!set.has(d.toISOString().slice(0, 10))) d.setDate(d.getDate() - 1);
+  while (set.has(d.toISOString().slice(0, 10))) { s++; d.setDate(d.getDate() - 1); }
+  return s;
+}
+
+/* SRS boxes: miss = box 0 (due now), right = box+1 and due in `box` days */
+function srsTouch(key, item, ok) {
+  const e = srs[key] || { item, b: 0, d: 0 };
+  e.item = item;                                   // keep freshest data
+  if (ok) { e.b = Math.min((e.b || 0) + 1, 6); e.d = Date.now() + Math.max(1, e.b) * DAY_MS; }
+  else { e.b = 0; e.d = Date.now(); }
+  srs[key] = e;
+  const keys = Object.keys(srs);
+  if (keys.length > 2000) delete srs[keys[0]];    // cap storage
+  save(SRS_KEY, srs);
+}
+
+const dueItems = () => Object.values(srs).filter((e) => (e.d || 0) <= Date.now());
 
 /* ── speech ────────────────────────────────────────────────── */
 
@@ -290,8 +327,9 @@ const AZ = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 function basePool() {
   if (S.mode === 'sentence') return D.sentences[S.level] || [];
   const base = D.words[S.level] || [];
-  // meaning mode needs a gloss to read out
-  return S.mode === 'meaning' ? base.filter((e) => e.g) : base;
+  if (S.mode === 'meaning') return base.filter((e) => e.g);   // needs a gloss to read out
+  if (S.mode === 'pron') return base.filter((e) => e.n || e.s); // needs a pronunciation note
+  return base;
 }
 
 // pool for the current level+mode, honoring the A–Z letter filter
@@ -319,7 +357,7 @@ function renderLetters() {
   $('#letters').innerHTML = html;
 
   const n = poolFor().length;
-  const kind = S.mode === 'word' ? 'words' : S.mode === 'meaning' ? 'meanings' : 'sentences';
+  const kind = S.mode === 'word' ? 'words' : S.mode === 'meaning' ? 'meanings' : S.mode === 'pron' ? 'words' : 'sentences';
   const sel = S.letters.size ? [...S.letters].sort().join(', ') : 'ALL';
   $('#letters-count').textContent = `${n.toLocaleString()} ${kind} · ${sel}`;
 }
@@ -362,16 +400,24 @@ function renderHome() {
   if (document.activeElement !== ai) ai.value = S.article;
   updateModeUI();
 
+  // spaced review: items due today
+  const due = dueItems();
+  $('#due-quick').hidden = due.length === 0;
+  $('#due-text').innerHTML = `<b id="due-n">${due.length}</b> word${due.length === 1 ? '' : 's'} ready for review`;
+
   // tricky
   const n = Object.keys(tricky).length;
   $('#tricky-quick').hidden = n === 0;
   $('#tricky-n').textContent = n;
   $('#tricky-text').innerHTML = `<b id="tricky-n">${n}</b> tricky item${n === 1 ? '' : 's'} waiting`;
 
-  // overall stats
+  // overall stats (+ streak)
   const pct = stats.total ? Math.round((stats.right / stats.total) * 100) + '%' : '—';
+  const streak = streakDays();
   $('#stats-pct').textContent = pct;
-  $('#stats-n').textContent = stats.total ? `${stats.total} done` : 'no practice yet';
+  $('#stats-n').textContent = stats.total
+    ? `${stats.total} done${streak >= 1 ? ` · 🔥 ${streak}` : ''}`
+    : 'no practice yet';
 }
 
 function bindHome() {
@@ -394,8 +440,8 @@ function bindHome() {
     renderLetters();
   });
 
-  // 4-way mode group: word / sentence / meaning / article
-  const MODES = { '#mode-word': 'word', '#mode-sentence': 'sentence', '#mode-meaning': 'meaning', '#mode-article': 'article' };
+  // 5-way mode group: word / sentence / meaning / pron / article
+  const MODES = { '#mode-word': 'word', '#mode-sentence': 'sentence', '#mode-meaning': 'meaning', '#mode-pron': 'pron', '#mode-article': 'article' };
   Object.entries(MODES).forEach(([sel, val]) => {
     $(sel).addEventListener('click', () => {
       S.mode = val;
@@ -441,6 +487,71 @@ function bindHome() {
 
   $('#btn-start').addEventListener('click', () => startSession(false));
   $('#btn-tricky').addEventListener('click', () => startSession(true));
+  $('#btn-due').addEventListener('click', startDueReview);
+  $('#btn-backup').addEventListener('click', backupProgress);
+  $('#btn-restore').addEventListener('click', () => $('#restore-file').click());
+  $('#restore-file').addEventListener('change', (e) => {
+    const f = e.target.files?.[0];
+    if (f) restoreProgress(f);
+    e.target.value = '';
+  });
+}
+
+/* spaced review: practise the words that are due today */
+function startDueReview() {
+  const due = dueItems();
+  if (!due.length) return;
+  let pool = due.map((e) => ({ ...e.item, hint: false }));
+  shuffle(pool);
+  const len = S.len > 0 ? S.len : 10;
+  pool = pool.slice(0, len);
+  S.queue = pool;
+  S.i = 0; S.right = 0; S.wrong = 0; S.missed = [];
+  S.review = true; S.fromTricky = false; S.fromArticle = false;
+  show('practice');
+  loadCard();
+}
+
+/* ── backup & restore ──────────────────────────────────────── */
+
+function backupMsg(txt) {
+  const el = $('#backup-msg');
+  el.textContent = txt;
+  clearTimeout(backupMsg._t);
+  backupMsg._t = setTimeout(() => { el.textContent = ''; }, 4000);
+}
+
+function backupProgress() {
+  try {
+    const data = { app: 'writeright', version: 1, saved: new Date().toISOString(), keys: {} };
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.indexOf('writeRight.') === 0) data.keys[k] = localStorage.getItem(k);
+    }
+    const blob = new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `writeright-backup-${todayStr()}.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    backupMsg('Backup file saved ✓ — keep it somewhere safe');
+  } catch { backupMsg('Backup failed — storage not readable'); }
+}
+
+function restoreProgress(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data || data.app !== 'writeright' || !data.keys) throw new Error('bad file');
+      Object.entries(data.keys).forEach(([k, v]) => {
+        if (k.indexOf('writeRight.') === 0) localStorage.setItem(k, v);
+      });
+      backupMsg('Progress restored ✓ — reloading…');
+      setTimeout(() => location.reload(), 900);
+    } catch { backupMsg('That file is not a WriteRight backup'); }
+  };
+  reader.readAsText(file);
 }
 
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -451,6 +562,7 @@ function itemOf(mode, e) {
   return {
     m: mode, t: e.t, i: e.i || '', p: e.p || '', g: e.g || '', w: e.w || '',
     gs: e.gs || [], ex: mode === 'sentence' ? [] : (e.ex || []),
+    s: e.s || '', n: e.n || '',
     mi: 0, ci: -1,
     hint: false,
   };
@@ -539,7 +651,7 @@ function loadCard() {
   // voice for this card: a fresh random one in shuffle mode
   S.curVoice = S.mix ? randomVoice() : VOICE;
 
-  const kind = it.m === 'word' ? 'word' : it.m === 'meaning' ? 'meaning' : 'sentence';
+  const kind = it.m === 'word' ? 'word' : it.m === 'meaning' ? 'meaning' : it.m === 'pron' ? 'pronounce' : 'sentence';
   $('#listen-tag').textContent =
     `${kind} · ${S.fromTricky ? 'tricky' : S.fromArticle ? 'article' : S.level}${S.mix ? ' · 🎙' : ''}`;
   $('#listen-sub').textContent =
@@ -547,7 +659,9 @@ function loadCard() {
       ? 'Listen and write the word'
       : it.m === 'meaning'
         ? 'Which word means this? Write the word'
-        : 'Listen and write the sentence') +
+        : it.m === 'pron'
+          ? 'Listen, say it out loud — then check'
+          : 'Listen and write the sentence') +
     (S.mix ? ' — a new voice each card' : '');
 
   // meaning mode: show the gloss (with the answer masked out of it)
@@ -567,7 +681,10 @@ function loadCard() {
     $('#btn-other').hidden = glossesOf(it).length < 2;
   }
 
-  $('#type-label').textContent = it.m === 'meaning' ? 'Type the word it means' : 'Write what you hear';
+  $('#type-label').textContent =
+    it.m === 'meaning' ? 'Type the word it means'
+    : it.m === 'pron' ? 'Say it out loud, then type it'
+    : 'Write what you hear';
   $('#hint-line').hidden = true;
 
   // reset answer areas
@@ -668,6 +785,17 @@ function reveal(diffData, selfAssess) {
 
   $('#reveal-text').textContent = it.t;
   $('#reveal-ipa').textContent = it.m !== 'sentence' && it.i ? it.i : '';
+
+  // pronunciation clinic: stress + common-mistake note (word & pronounce modes)
+  const prBox = $('#reveal-pron');
+  if (it.m !== 'sentence' && (it.s || it.n)) {
+    prBox.hidden = false;
+    prBox.innerHTML =
+      (it.s ? `<b class="rp-stress">${esc(it.s)}</b>` : '') +
+      (it.n ? `<span class="rp-note">${esc(it.n)}</span>` : '');
+  } else {
+    prBox.hidden = true;
+  }
   const glossAll = it.m === 'meaning' ? glossesOf(it).join(' · ') : it.g;
   $('#reveal-gloss').innerHTML = glossAll
     ? `<b>${it.m === 'sentence' ? esc(it.w) + ' — ' : ''}${esc(glossAll)}</b>`
@@ -684,8 +812,8 @@ function reveal(diffData, selfAssess) {
     exBox.hidden = true;
   }
 
-  // meaning mode: now say the answer word out loud so it sticks
-  if (it.m === 'meaning') setTimeout(() => speak(it.t, S.rate * 0.95), 420);
+  // meaning & pronounce modes: say the answer word out loud so it sticks
+  if (it.m === 'meaning' || it.m === 'pron') setTimeout(() => speak(it.t, S.rate * 0.95), 420);
 
   // diff (type mode only)
   const box = $('#diff-box');
@@ -722,18 +850,22 @@ function checkTyped() {
 
 function grade(ok) {
   const it = cur();
+  const key = it.m + '|' + it.t;
+  const item = { m: it.m, t: it.t, i: it.i, p: it.p, g: it.g, gs: it.gs || [], w: it.w, ex: it.ex || [] };
   if (ok) {
     S.right++;
-    delete tricky[it.m + '|' + it.t];
+    delete tricky[key];
   } else {
     S.wrong++;
     S.missed.push(it);
-    tricky[it.m + '|' + it.t] = { m: it.m, t: it.t, i: it.i, p: it.p, g: it.g, gs: it.gs || [], w: it.w, ex: it.ex || [] };
+    tricky[key] = item;
     const keys = Object.keys(tricky);
     if (keys.length > 300) delete tricky[keys[0]];
   }
+  srsTouch(key, item, ok);        // spaced review: when this word comes back
   stats.total++;
   if (ok) stats.right++;
+  logPracticeDay();
   save(TRICKY_KEY, tricky);
   save(STATS_KEY, stats);
   $('#sc-ok').textContent = `✓ ${S.right}`;

@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="style.css?v=8">
+<link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
 
@@ -42,6 +42,14 @@
     <p class="hero-sub">Words &amp; sentences from your <b class="you">Master Vocab</b>. Listen, then <b>type</b> it or <b>write it in your book</b> and check yourself.</p>
   </div>
 
+  <div id="due-quick" class="tricky-quick" hidden>
+    <button id="btn-due" class="ghost-cta" style="background:var(--teal-soft);border-color:color-mix(in srgb, var(--teal) 35%, transparent)">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true" style="color:var(--teal)"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 5h-2v6l5 3 1-1.7-4-2.3z"/></svg>
+      <span id="due-text"><b id="due-n">0</b> words ready for review</span>
+      <span class="ghost-cta-arrow" aria-hidden="true" style="color:var(--teal)">→</span>
+    </button>
+  </div>
+
   <div id="tricky-quick" class="tricky-quick" hidden>
     <button id="btn-tricky" class="ghost-cta">
       <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 3l2.7 5.6 6.3.8-4.6 4.3 1.2 6.2L12 17l-5.6 2.9 1.2-6.2L3 9.4l6.3-.8z"/></svg>
@@ -62,7 +70,7 @@
     <p class="letters-note">Tap one letter or several (e.g. A + B + C) — or keep <b>ALL</b>.</p>
   </div>
 
-  <div class="step-label"><span class="step-n">2</span> Words, sentences or meanings?</div>
+  <div class="step-label"><span class="step-n">2</span> Pick your practice</div>
   <div class="opt-row opt-row4">
     <button class="opt-card" id="mode-word" aria-pressed="false">
       <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M5 4h14v2H5zM5 9h9v2H5zM5 14h14v2H5zM5 19h9v2H5z"/></svg>
@@ -75,6 +83,10 @@
     <button class="opt-card" id="mode-meaning" aria-pressed="false">
       <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm.2-12.6c-1.9 0-3.2 1.3-3.3 3.2h1.9c.1-.9.6-1.5 1.4-1.5.8 0 1.3.5 1.3 1.2 0 .8-.5 1.2-1.2 1.8-.8.6-1.3 1.2-1.3 2.4v.5h1.8v-.4c0-.8.4-1.1 1.2-1.8.8-.6 1.4-1.3 1.4-2.6 0-1.7-1.4-2.8-3.2-2.8zM11 17.2h2v2h-2z"/></svg>
       <b>Meaning</b><small>hear the meaning → write the word</small>
+    </button>
+    <button class="opt-card" id="mode-pron" aria-pressed="false">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3zm7 8a7 7 0 0 1-6 6.9V21h-2v-3.1A7 7 0 0 1 5 11h2a5 5 0 0 0 10 0z"/></svg>
+      <b>Pronounce</b><small>hear it → say it → notes</small>
     </button>
     <button class="opt-card" id="mode-article" aria-pressed="false">
       <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 4h13l3 3v13H4zm2 2v12h12V8h-3V6zm2 3h8v1.6H8zm0 3.2h8V14H8zm0 3.2h5v1.6H8z"/></svg>
@@ -146,6 +158,19 @@
       <b>Check</b>
       <small>See the answer, meaning &amp; spelling diff.</small>
     </div>
+  </div>
+
+  <div class="backup-row">
+    <button id="btn-backup" class="pill">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 3v10m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      Backup progress
+    </button>
+    <button id="btn-restore" class="pill">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 13V3m0 0 4 4m-4-4-4 4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      Restore
+    </button>
+    <input type="file" id="restore-file" accept="application/json,.json" hidden>
+    <span id="backup-msg" class="backup-msg"></span>
   </div>
 </section>
 
@@ -239,6 +264,7 @@
     <div class="verdict" id="verdict"></div>
     <div class="reveal-word" id="reveal-text"></div>
     <div class="reveal-ipa" id="reveal-ipa"></div>
+    <div class="reveal-pron" id="reveal-pron" hidden></div>
     <div class="diff-box" id="diff-box" hidden>
       <div class="diff-row"><span class="diff-lab">You wrote</span><span class="diff-txt mono" id="diff-yours"></span></div>
       <div class="diff-row"><span class="diff-lab">Answer</span><span class="diff-txt mono" id="diff-goal"></span></div>
@@ -335,7 +361,12 @@
   </div>
 </div>
 
-<script src="data.js?v=2"></script>
-<script src="app.js?v=8"></script>
+<script src="data.js?v=3"></script>
+<script src="app.js?v=14"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    addEventListener("load", () => navigator.serviceWorker.register("../sw.js", { scope: "../" }).catch(() => {}));
+  }
+</script>
 </body>
 </html>

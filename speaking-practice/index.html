@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="style.css?v=11">
+<link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
 
@@ -324,6 +324,10 @@
       <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21m-3 0h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       <span id="rec-label">Record</span>
     </button>
+    <button id="btn-ai" class="ctl ai" hidden title="Speak — the app checks your words">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H8.4L5 20.2A.8.8 0 0 1 3.7 19.6V5a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8 8.5h8M8 12h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      <span id="ai-label">AI check</span>
+    </button>
     <button id="btn-flip" class="ctl primary" title="Flip the card (Space)">
       <span id="flip-label">Flip</span>
       <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 8h13l-3-3M20 16H7l3 3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -339,6 +343,15 @@
       <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       <span id="model-btn-label">Model answer</span>
     </button>
+  </div>
+
+  <div id="speech-check" class="speech-check" hidden>
+    <div class="sc-head">
+      <span class="sc-verdict" id="sc-verdict"></span>
+      <button id="btn-sc-close" class="x-mini" title="Close" aria-label="Close check">✕</button>
+    </div>
+    <div class="sc-words" id="sc-words" aria-live="polite"></div>
+    <p class="sc-note">Green = you said it · amber = missed · red = extra words</p>
   </div>
 
   <div class="rate-slot">
@@ -739,6 +752,9 @@
     </select>
   </label>
   <div class="drawer-foot">
+    <button id="btn-se-backup" class="link-btn">⬇ Backup progress</button>
+    <button id="btn-se-restore" class="link-btn">⬆ Restore progress</button>
+    <input type="file" id="se-restore-file" accept="application/json,.json" hidden>
     <button id="btn-reset" class="link-btn danger">Reset all progress</button>
   </div>
 </aside>
@@ -747,6 +763,11 @@
 
 <script src="data.js"></script>
 <script src="quiz-data.js?v=5"></script>
-<script src="app.js?v=13"></script>
+<script src="app.js?v=14"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    addEventListener("load", () => navigator.serviceWorker.register("../sw.js", { scope: "../" }).catch(() => {}));
+  }
+</script>
 </body>
 </html>

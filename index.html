@@ -181,10 +181,43 @@ body {
   color: var(--mut); font-weight: 600; font-size: 12.5px;
 }
 
+/* ── progress panel ─────────────────────────────────────────── */
+.progress-panel {
+  margin-top: 26px;
+  background: var(--card, #fff);
+  border: 1.5px solid var(--line, #ddd);
+  border-radius: 20px;
+  padding: 18px 18px 16px;
+}
+.pp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 13px; }
+.pp-head h2 { font-family: var(--disp); font-size: 20px; font-weight: 800; }
+.pp-streak { font-weight: 800; font-size: 14px; color: #E2562E; }
+.pp-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.pp-tile {
+  background: var(--soft, #f4f6f8);
+  border-radius: 13px;
+  padding: 10px 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.pp-tile b { font-family: var(--disp); font-size: 21px; font-weight: 800; color: #0C7265; }
+.pp-tile span { font-size: 10.5px; font-weight: 700; color: var(--mut, #777); text-align: center; }
+.pp-heat-wrap { margin-top: 14px; }
+.pp-lab { display: block; font-size: 11px; font-weight: 700; color: var(--mut, #777); margin-bottom: 7px; }
+.pp-heat { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 12px); gap: 3px; overflow-x: auto; padding-bottom: 2px; }
+.pp-heat i { width: 12px; height: 12px; border-radius: 3.5px; background: var(--soft, #eef1f4); }
+.pp-heat i.l1 { background: #b7e2d8; }
+.pp-heat i.l2 { background: #6cc3b0; }
+.pp-heat i.l3 { background: #0C7265; }
 @media (max-width: 640px) {
   .apps { grid-template-columns: 1fr; }
+  .pp-tiles { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="English Hub">
 </head>
 <body>
 <section class="screen">
@@ -235,6 +268,23 @@ body {
       </ul>
       <span class="app-go">Start dictation →</span>
     </a>
+  </div>
+
+  <div class="progress-panel" id="progress-panel" hidden>
+    <div class="pp-head">
+      <h2>Your progress</h2>
+      <span class="pp-streak" id="pp-streak"></span>
+    </div>
+    <div class="pp-tiles">
+      <div class="pp-tile"><b id="pp-total">0</b><span>items practised</span></div>
+      <div class="pp-tile"><b id="pp-acc">—</b><span>accuracy</span></div>
+      <div class="pp-tile"><b id="pp-review">0</b><span>in spaced review</span></div>
+      <div class="pp-tile"><b id="pp-days">0</b><span>active days</span></div>
+    </div>
+    <div class="pp-heat-wrap">
+      <span class="pp-lab">Last 12 weeks · green = practiced</span>
+      <div class="pp-heat" id="pp-heat" aria-hidden="true"></div>
+    </div>
   </div>
 
   <p class="foot">Progress is saved on this device · theme follows you between apps</p>
@@ -313,5 +363,63 @@ body {
   } catch { /* storage unavailable */ }
 })();
 </script>
-</body>
-</html>
+<script>
+(function () {
+  'use strict';
+  /* ── progress dashboard: reads both apps' storage ────────── */
+  const jparse = (v, d) => { try { return JSON.parse(v) ?? d; } catch { return d; } };
+  const panel = document.getElementById('progress-panel');
+  if (!panel) return;
+
+  const stats = jparse(localStorage.getItem('writeRight.stats.v1'), { total: 0, right: 0 });
+  const srs = jparse(localStorage.getItem('writeRight.srs.v1'), {});
+  const wrDays = jparse(localStorage.getItem('writeRight.days.v1'), []);
+  const se = jparse(localStorage.getItem('speakeasy-v1'), {});
+  const seDays = Array.isArray(se.days) ? se.days : [];
+
+  const total = (stats.total || 0) + (Number(se.total) || 0);
+  if (!total) return;                       // nothing practised yet — hide panel
+
+  const acc = stats.total ? Math.round(((stats.right || 0) / stats.total) * 100) + '%' : '—';
+  const review = Object.keys(srs).length + Object.keys(se.srs || {}).length;
+
+  const daySet = new Set([...(Array.isArray(wrDays) ? wrDays : []), ...seDays]);
+  const iso = (d) => d.toISOString().slice(0, 10);
+  let streak = 0;
+  const cur = new Date();
+  if (!daySet.has(iso(cur))) cur.setDate(cur.getDate() - 1);
+  while (daySet.has(iso(cur))) { streak++; cur.setDate(cur.getDate() - 1); }
+
+  document.getElementById('pp-total').textContent = total.toLocaleString();
+  document.getElementById('pp-acc').textContent = acc;
+  document.getElementById('pp-review').textContent = review.toLocaleString();
+  document.getElementById('pp-days').textContent = daySet.size;
+  document.getElementById('pp-streak').textContent = streak > 1 ? '🔥 ' + streak + '-day streak' : '';
+  panel.hidden = false;
+
+  /* heatmap: last 12 weeks, one column per week, top = Monday-ish (JS weeks start Sunday) */
+  const heat = document.getElementById('pp-heat');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const end = new Date(today);
+  end.setDate(end.getDate() + (6 - end.getDay()));     // pad to end of current week
+  let html = '';
+  for (let w = 11; w >= 0; w--) {
+    for (let d = 0; d < 7; d++) {
+      const day = new Date(end);
+      day.setDate(end.getDate() - (w * 7 + (6 - d)));
+      const on = daySet.has(iso(day));
+      const future = day > today;
+      const lvl = on ? (day.getDay() === 0 || day.getDay() === 6 ? 'l2' : 'l3') : '';
+      html += '<i class="' + lvl + '"' + (future ? ' style="opacity:.35"' : '') + '></i>';
+    }
+  }
+  heat.innerHTML = html;
+})();
+</script>
+<script>
+  if ("serviceWorker" in navigator) {
+    addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
+</script>
+</body></html>

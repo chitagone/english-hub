@@ -601,6 +601,8 @@ function showCard() {
   flipped = false;
   stopSpeaking();
   discardRecording();
+  $("#speech-check").hidden = true;
+  if (srLive) { try { srLive.stop(); } catch { /* ignore */ } }
 
   const card = $("#card");
   card.classList.remove("flipped", "speaking");
@@ -2200,6 +2202,104 @@ function discardRecording(hard = false) {
 
 /* ══════════════════ THEME & SETTINGS ══════════════════════ */
 
+/* ══════════════════ AI CHECK: speech → text diff ════════════ */
+
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+let srLive = null;
+
+/* the line we compare against in the current mode */
+function aiTarget(c) {
+  if (!c) return "";
+  if (sess.mode === "ask") return c.q || promptLine(c);
+  return modelLine(c) || promptLine(c) || c.q || "";
+}
+
+const aiClean = (s) =>
+  String(s || "").toLowerCase().replace(/[’‘`]/g, "'").replace(/[^a-z0-9' ]+/g, " ").replace(/\s+/g, " ").trim();
+
+/* word-level LCS diff — same idea as the dictation app */
+function aiDiff(target, said) {
+  const T = aiClean(target).split(" ").filter(Boolean);
+  const Y = aiClean(said).split(" ").filter(Boolean);
+  const n = T.length, m = Y.length;
+  const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--)
+    for (let j = m - 1; j >= 0; j--)
+      dp[i][j] = T[i] === Y[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  const ops = [];
+  let i = 0, j = 0;
+  while (i < n && j < m) {
+    if (T[i] === Y[j]) { ops.push({ o: "m", w: T[i] }); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) { ops.push({ o: "miss", w: T[i] }); i++; }
+    else { ops.push({ o: "extra", w: Y[j] }); j++; }
+  }
+  while (i < n) ops.push({ o: "miss", w: T[i++] });
+  while (j < m) ops.push({ o: "extra", w: Y[j++] });
+  return { ops, pct: n ? Math.round((ops.filter((o) => o.o === "m").length / n) * 100) : 0 };
+}
+
+function renderSpeechCheck(said) {
+  const c = cur();
+  const target = aiTarget(c);
+  const { ops, pct } = aiDiff(target, said);
+
+  const v = $("#sc-verdict");
+  v.textContent = pct >= 90 ? `✓ ${pct}% — excellent!` : pct >= 60 ? `~ ${pct}% — close, check the amber words` : `${pct}% — try again slowly`;
+  v.className = `sc-verdict ${pct >= 90 ? "good" : pct >= 60 ? "ok" : "bad"}`;
+
+  $("#sc-words").innerHTML = ops.map((o) =>
+    o.o === "m" ? `<b class="w-ok">${esc(o.w)}</b> `
+    : o.o === "miss" ? `<b class="w-miss">${esc(o.w)}</b> `
+    : `<b class="w-extra">${esc(o.w)}</b> `).join("");
+
+  const box = $("#speech-check");
+  box.hidden = false;
+  box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function toggleAiCheck() {
+  if (!SR) { toast("Speech checking needs Chrome or Edge."); return; }
+  if (srLive) { try { srLive.stop(); } catch { /* ignore */ } return; }
+
+  const c = cur();
+  if (!c) return;
+  stopSpeaking();
+  stopRecPlayback();
+  $("#speech-check").hidden = true;
+
+  const r = new SR();
+  srLive = r;
+  r.lang = "en-US";
+  r.interimResults = false;
+  r.maxAlternatives = 1;
+
+  const btn = $("#btn-ai");
+  btn.classList.add("live");
+  $("#ai-label").textContent = "Listening…";
+
+  const done = () => {
+    srLive = null;
+    btn.classList.remove("live");
+    $("#ai-label").textContent = "AI check";
+  };
+
+  r.onresult = (e) => {
+    const said = e.results?.[0]?.[0]?.transcript || "";
+    done();
+    if (said.trim()) renderSpeechCheck(said);
+    else toast("I didn't catch that — try again a bit louder.");
+  };
+  r.onerror = (e) => {
+    done();
+    if (e.error === "not-allowed" || e.error === "service-not-allowed") toast("Mic blocked — allow the microphone to use AI check.");
+    else if (e.error === "no-speech") toast("I didn't hear anything — tap again and speak.");
+    else toast("Speech check didn't work here — try Chrome or Edge.");
+  };
+  r.onend = done;
+
+  try { r.start(); } catch { done(); }
+}
+
 const darkQuery = window.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : null;
 
 function applyTheme() {
@@ -2356,6 +2456,9 @@ function wire() {
 
   $("#btn-flip").addEventListener("click", flip);
   $("#btn-hear").addEventListener("click", toggleHear);
+  $("#btn-ai").addEventListener("click", toggleAiCheck);
+  $("#btn-sc-close").addEventListener("click", () => { $("#speech-check").hidden = true; });
+  if (SR) $("#btn-ai").hidden = false;   // speech recognition available (Chrome/Edge)
   $("#back-scroll").addEventListener("scroll", updateBackScrollHint, { passive: true });
   window.addEventListener("resize", updateBackScrollHint);
   $("#btn-rec").addEventListener("click", toggleRecord);
@@ -2483,6 +2586,38 @@ function wire() {
       try { localStorage.removeItem(LS); } catch { /* ignore */ }
       location.reload();
     }
+  });
+
+  /* backup / restore all SpeakEasy progress */
+  $("#btn-se-backup").addEventListener("click", () => {
+    try {
+      const raw = localStorage.getItem(LS) || "{}";
+      const data = { app: "speakeasy", version: 1, saved: new Date().toISOString(), keys: { [LS]: raw } };
+      const blob = new Blob([JSON.stringify(data, null, 1)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `speakeasy-backup-${todayISO()}.json`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      toast("Backup file saved ✓ — keep it somewhere safe");
+    } catch { toast("Backup failed — storage not readable"); }
+  });
+  $("#btn-se-restore").addEventListener("click", () => $("#se-restore-file").click());
+  $("#se-restore-file").addEventListener("change", (e) => {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        if (!data || data.app !== "speakeasy" || !data.keys?.[LS]) throw new Error("bad file");
+        localStorage.setItem(LS, data.keys[LS]);
+        toast("Progress restored ✓ — reloading…");
+        setTimeout(() => location.reload(), 900);
+      } catch { toast("That file is not a SpeakEasy backup"); }
+    };
+    reader.readAsText(f);
   });
 
   $("#btn-streak").addEventListener("click", () => {

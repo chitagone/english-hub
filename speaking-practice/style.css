@@ -2248,6 +2248,52 @@ mark.slot {
 
 .tk-model-btn { align-self: center; }
 
+/* AI check: speech → text diff */
+.speech-check {
+  margin-top: 14px;
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: 18px;
+  padding: 13px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: screenIn .24s ease both;
+}
+.sc-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sc-verdict {
+  font-family: var(--disp);
+  font-weight: 800;
+  font-size: 16.5px;
+  padding: 4px 14px;
+  border-radius: 999px;
+}
+.sc-verdict.good { color: var(--teal); background: var(--teal-soft); }
+.sc-verdict.ok { color: var(--amber); background: var(--amber-soft); }
+.sc-verdict.bad { color: var(--coral); background: var(--coral-soft); }
+.x-mini {
+  flex: none;
+  width: 28px; height: 28px;
+  display: grid; place-items: center;
+  border-radius: 9px;
+  background: var(--card-soft);
+  border: 1.5px solid var(--line);
+  color: var(--mut);
+  font-size: 13px;
+}
+.sc-words { font-size: 16px; font-weight: 700; line-height: 1.7; word-break: break-word; }
+.sc-words .w-ok { color: var(--teal); }
+.sc-words .w-miss { color: var(--amber); border-bottom: 2.5px dotted color-mix(in srgb, var(--amber) 60%, transparent); }
+.sc-words .w-extra { color: var(--coral); opacity: .7; text-decoration: line-through; }
+.sc-note { font-size: 11.5px; font-weight: 600; color: var(--mut); }
+.ctl.ai { color: var(--violet); }
+.ctl.ai.live {
+  color: #fff;
+  background: var(--violet);
+  border-color: var(--violet);
+  animation: micblink 1.1s ease-in-out infinite;
+}
+
 /* full 1-minute example: part-by-part script */
 .tk-example { display: flex; flex-direction: column; gap: 7px; }
 

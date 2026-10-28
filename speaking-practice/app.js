@@ -733,13 +733,9 @@ function exRows(items) {
     <span class="dot-t" aria-hidden="true">▸</span><span>${esc(t)}</span>${n ? `<span class="ex-note">— ${esc(n)}</span>` : ""}</div>`).join("");
 }
 
-function buildBack(c, mode = "answer") {
-  const b = $("#b-kbadge");
+/* the COMPLETE card content: pattern, model, all examples, grammar, conversation */
+function backHTML(c, mode = "answer") {
   const askMode = mode === "ask";
-  b.textContent = askMode ? "How to ask" : "How to answer";
-  b.className = `kbadge back-badge${askMode ? " role" : ""}`;
-  $("#b-topic").textContent = c.topic || "";
-
   let h = "";
 
   if (askMode) {
@@ -771,15 +767,14 @@ function buildBack(c, mode = "answer") {
         </div></div>`;
     }
 
-    if (c.kind === "gram") {
-      if (c.rule) h += `<div class="b-sec"><div class="b-label">The rule</div><p class="gram-rule">${esc(c.rule)}</p></div>`;
-      if (c.patterns?.length) h += `<div class="b-sec"><div class="b-label">Patterns</div>${
-        c.patterns.map((p) => `<div class="gram-pat">${slotify(p)}</div>`).join("")}</div>`;
-      if (c.mistakes?.length) h += `<div class="b-sec"><div class="b-label">Avoid</div>${
-        c.mistakes.map((m) => `<div class="mistake"><span class="w">✗ ${esc(m.w)}</span> → <span class="r">✓ ${esc(m.r)}</span>${
-          m.n ? `<span class="mn">${esc(m.n)}</span>` : ""}</div>`).join("")}</div>`;
-      if (c.trick) h += `<div class="b-sec"><div class="b-label">Trick</div><div class="trick-box">${esc(c.trick)}</div></div>`;
-    }
+    /* grammar extras: show them whenever a card carries them */
+    if (c.rule) h += `<div class="b-sec"><div class="b-label">The rule</div><p class="gram-rule">${esc(c.rule)}</p></div>`;
+    if (c.patterns?.length) h += `<div class="b-sec"><div class="b-label">Patterns</div>${
+      c.patterns.map((p) => `<div class="gram-pat">${slotify(p)}</div>`).join("")}</div>`;
+    if (c.mistakes?.length) h += `<div class="b-sec"><div class="b-label">Avoid</div>${
+      c.mistakes.map((m) => `<div class="mistake"><span class="w">✗ ${esc(m.w)}</span> → <span class="r">✓ ${esc(m.r)}</span>${
+        m.n ? `<span class="mn">${esc(m.n)}</span>` : ""}</div>`).join("")}</div>`;
+    if (c.trick) h += `<div class="b-sec"><div class="b-label">Trick</div><div class="trick-box">${esc(c.trick)}</div></div>`;
 
     const exs = c.kind === "role" ? [] : exList(c.ex, [model, promptLine(c)]);
     if (exs.length) {
@@ -788,26 +783,41 @@ function buildBack(c, mode = "answer") {
 
     if (c.dlg?.length) {
       h += `<div class="b-sec"><div class="b-label">Mini conversation
-        <button type="button" class="play-all" id="btn-play-dlg">
+        <button type="button" class="play-all btn-play-dlg">
           <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>Play both parts</button></div>
-        <div class="dlg" id="dlg">${
+        <div class="dlg">${
           c.dlg.map(([sp, t]) => `<div class="dlg-line ${sp.toLowerCase()}"><span class="who">${sp === "A" ? "They ask" : "You say"}</span>${esc(t)}</div>`).join("")
         }</div></div>`;
     }
   }
 
-  if (!h) h = `<div class="b-sec"><p class="gram-rule">Answer naturally in your own words — a model is coming soon.</p></div>`;
+  return h || `<div class="b-sec"><p class="gram-rule">Answer naturally in your own words — a model is coming soon.</p></div>`;
+}
 
-  $("#back-body").innerHTML = h;
+/* wire the "Play both parts" buttons inside a rendered card section */
+function bindDlgPlay(root, c) {
+  root.querySelectorAll(".btn-play-dlg").forEach((b) => {
+    b.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const sec = b.closest(".b-sec");
+      playDialogue(c.dlg, sec ? [...sec.querySelectorAll(".dlg-line")] : []);
+    });
+  });
+}
+
+function buildBack(c, mode = "answer") {
+  const b = $("#b-kbadge");
+  const askMode = mode === "ask";
+  b.textContent = askMode ? "How to ask" : "How to answer";
+  b.className = `kbadge back-badge${askMode ? " role" : ""}`;
+  $("#b-topic").textContent = c.topic || "";
+
+  $("#back-body").innerHTML = backHTML(c, mode);
   $("#back-scroll").scrollTop = 0;
   requestAnimationFrame(updateBackScrollHint);
 
   bindSay($("#back-body"));
-
-  $("#btn-play-dlg")?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    playDialogue(c.dlg);
-  });
+  bindDlgPlay($("#back-body"), c);
 }
 
 /* make every [data-say] element speak its text on click / Enter */
@@ -828,43 +838,7 @@ function bindSay(root) {
   });
 }
 
-/* ── beginner mode: pattern + examples on the card FRONT ──── */
-
-function cheatHTML(c, mode = "answer") {
-  const askMode = mode === "ask";
-  let h = "";
-
-  if (askMode) {
-    if (c.q) {
-      h += `<div class="b-sec"><div class="b-label">The question</div>
-        <div class="question-box">${playBtn(c.q)}<div class="mb-txt">${esc(c.q)}</div></div></div>`;
-    }
-    if (c.frame) {
-      h += `<div class="b-sec"><div class="b-label">Pattern — how to ask</div>
-        <div class="frame-box">${slotify(c.frame)}</div></div>`;
-    }
-    const askExs = exList(c.ex, [c.q]);
-    if (askExs.length) {
-      h += `<div class="b-sec"><div class="b-label">More ways to ask — tap to hear</div>${exRows(askExs)}</div>`;
-    }
-  } else {
-    if (c.frame) {
-      h += `<div class="b-sec"><div class="b-label">Pattern — how to answer</div>
-        <div class="frame-box">${slotify(c.frame)}</div></div>`;
-    }
-    const model = modelLine(c);
-    if (model) {
-      h += `<div class="b-sec"><div class="b-label">You can say</div>
-        <div class="model-box">${playBtn(model)}<div class="mb-txt">${esc(model)}</div></div></div>`;
-    }
-    const exs = c.kind === "role" ? [] : exList(c.ex, [model, promptLine(c)]);
-    if (exs.length) {
-      h += `<div class="b-sec"><div class="b-label">More ways to say it — tap to hear</div>${exRows(exs)}</div>`;
-    }
-  }
-
-  return h || `<div class="b-sec"><p class="gram-rule">Answer in your own words — any natural reply is fine.</p></div>`;
-}
+/* ── beginner mode: everything you can say, on the card FRONT ── */
 
 function syncCheat() {
   const c = cur();
@@ -877,8 +851,10 @@ function syncCheat() {
   const body = $("#cheat-body");
   body.hidden = !on;
   if (on) {
-    body.innerHTML = cheatHTML(c, sess.mode);
+    /* the FULL card content: pattern, model, all examples, rule, conversation */
+    body.innerHTML = backHTML(c, sess.mode);
     bindSay(body);
+    bindDlgPlay(body, c);
   }
 }
 
@@ -2079,19 +2055,19 @@ function toggleHear() {
 }
 
 let dlgTimers = [];
-function playDialogue(dlg) {
+function playDialogue(dlg, lines) {
   if (!dlg?.length) return;
   stopRecPlayback();
   stopSpeaking();
-  const lines = $$("#dlg .dlg-line");
+  const els = lines?.length ? lines : $$(".dlg .dlg-line");
   let t = 200;
   dlg.slice(0, 6).forEach(([sp, txt], i) => {
     dlgTimers.push(setTimeout(() => {
-      lines[i]?.classList.add("spoken");
+      els[i]?.classList.add("spoken");
       if (canSpeak) {
         speechSynthesis.speak(utter(txt, { voice: sp === "A" ? voiceA : voiceB, pitch: sp === "A" ? 1 : 1.12 }));
       }
-      dlgTimers.push(setTimeout(() => lines[i]?.classList.remove("spoken"), 1800));
+      dlgTimers.push(setTimeout(() => els[i]?.classList.remove("spoken"), 1800));
     }, t));
     t += Math.max(1900, (txt.length * 75) / store.set.rate);
   });

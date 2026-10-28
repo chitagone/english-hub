@@ -376,6 +376,8 @@ function updateModeUI() {
   $('#article-wrap').hidden = !isArt;
   $('#letters-wrap').hidden = isArt;
   $('#row-opts').hidden = isArt;          // order & length are fixed for articles
+  $('#answer-step').hidden = isArt || S.mode === 'pron';   // pron = speaking only, no answer choice
+  $('#answer-step-label').hidden = isArt || S.mode === 'pron';
   if (!isArt) renderLetters();
   updateArticleUI();
 }
@@ -687,9 +689,21 @@ function loadCard() {
     : 'Write what you hear';
   $('#hint-line').hidden = true;
 
-  // reset answer areas
-  $('#area-type').hidden = S.answer !== 'type';
-  $('#area-book').hidden = S.answer !== 'book';
+  // reset answer areas — pronounce is a pure speaking drill: no typing ever
+  const isPron = it.m === 'pron';
+  $('#area-type').hidden = isPron || S.answer !== 'type';
+  $('#area-book').hidden = !isPron && S.answer !== 'book';
+  if (isPron) {
+    $('#book-label').textContent = 'Say it out loud 🗣';
+    $('#book-note').textContent = 'No typing in this mode — listen, repeat the word clearly, then check the stress and sounds.';
+    $('#book-reveal-label').textContent = 'I said it ▸ Show answer';
+    $('#grade-q-txt').textContent = 'Did you say it right?';
+  } else {
+    $('#book-label').textContent = 'Write it in your book ✎';
+    $('#book-note').textContent = 'No typing here — listen as many times as you like, write the word or sentence in your notebook, then check yourself.';
+    $('#book-reveal-label').textContent = 'Show answer';
+    $('#grade-q-txt').textContent = 'Did you get it right in your book?';
+  }
   $('#result-card').hidden = true;
   $('#grade-row').hidden = true;
   setNext(false);
@@ -706,7 +720,7 @@ function loadCard() {
   $('#sc-ok').textContent = `✓ ${S.right}`;
   $('#sc-bad').textContent = `✗ ${S.wrong}`;
 
-  if (S.answer === 'type') setTimeout(() => inp.focus(), 60);
+  if (S.answer === 'type' && !isPron) setTimeout(() => inp.focus(), 60);
   play();
 }
 
@@ -797,13 +811,13 @@ function reveal(diffData, selfAssess) {
     prBox.hidden = true;
   }
   const glossAll = it.m === 'meaning' ? glossesOf(it).join(' · ') : it.g;
-  $('#reveal-gloss').innerHTML = glossAll
+  $('#reveal-gloss').innerHTML = (glossAll && it.m !== 'pron')   // pron = sound focus, no meaning
     ? `<b>${it.m === 'sentence' ? esc(it.w) + ' — ' : ''}${esc(glossAll)}</b>`
     : '';
 
   // word & meaning modes: a different example sentence each time this word appears
   const exBox = $('#reveal-ex');
-  if (it.m !== 'sentence' && it.ex && it.ex.length) {
+  if (it.m !== 'sentence' && it.m !== 'pron' && it.ex && it.ex.length) {
     const s = it.ex[Math.floor(Math.random() * it.ex.length)];
     exBox.hidden = false;
     $('#reveal-ex-text').innerHTML =
@@ -825,7 +839,7 @@ function reveal(diffData, selfAssess) {
     box.hidden = true;
   }
 
-  if (S.answer === 'type') {
+  if (S.answer === 'type' && it.m !== 'pron') {
     const inp = $('#type-in');
     inp.readOnly = true;
     inp.classList.add(diffData.ok ? 'done-ok' : 'done-bad');
@@ -976,8 +990,8 @@ function bindPractice() {
     if (k === 'h') showHint();
     if (k === 'm' && cur().m === 'meaning') otherMeaning();
     if (k === 'e' && cur().m === 'meaning') showCloze();
-    // book-mode self grade
-    if (S.answer === 'book' && S.checked) {
+    // book-mode self grade (also pronounce mode, which is always self-graded)
+    if ((S.answer === 'book' || cur().m === 'pron') && S.checked) {
       if (e.key === '1') $('#btn-right').click();
       if (e.key === '2') $('#btn-wrong').click();
     }

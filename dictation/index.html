@@ -106,8 +106,8 @@
     </div>
   </div>
 
-  <div class="step-label"><span class="step-n">3</span> How will you answer?</div>
-  <div class="opt-row">
+  <div class="step-label" id="answer-step-label"><span class="step-n">3</span> How will you answer?</div>
+  <div class="opt-row" id="answer-step">
     <button class="opt-card" id="answer-type" aria-pressed="true">
       <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M3 6h18v12H3zm2 2v8h14V8zm2 1.5h6v1.5H7zm0 3h9V14H7z"/></svg>
       <b>Type it</b><small>keyboard · auto-check</small>
@@ -251,11 +251,11 @@
 
   <!-- book mode -->
   <div id="area-book" class="answer-area" hidden>
-    <div class="aa-label">Write it in your book ✎</div>
-    <p class="book-note">No typing here — listen as many times as you like, write the word or sentence in your notebook, then check yourself.</p>
+    <div class="aa-label" id="book-label">Write it in your book ✎</div>
+    <p class="book-note" id="book-note">No typing here — listen as many times as you like, write the word or sentence in your notebook, then check yourself.</p>
     <button id="btn-reveal" class="cta small book-cta">
       <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 5c-5 0-9 4.5-10 7 1 2.5 5 7 10 7s9-4.5 10-7c-1-2.5-5-7-10-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-2a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
-      Show answer
+      <span id="book-reveal-label">Show answer</span>
     </button>
   </div>
 
@@ -277,7 +277,7 @@
       <span id="reveal-ex-text"></span>
     </button>
     <div class="grade-row" id="grade-row" hidden>
-      <span class="grade-q">Did you get it right in your book?</span>
+      <span class="grade-q" id="grade-q-txt">Did you get it right in your book?</span>
       <div class="grade-btns">
         <button id="btn-right" class="grade g-ok">
           <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg> Right <kbd>1</kbd></button>
@@ -362,7 +362,7 @@
 </div>
 
 <script src="data.js?v=3"></script>
-<script src="app.js?v=14"></script>
+<script src="app.js?v=15"></script>
 <script>
   if ("serviceWorker" in navigator) {
     addEventListener("load", () => navigator.serviceWorker.register("../sw.js", { scope: "../" }).catch(() => {}));

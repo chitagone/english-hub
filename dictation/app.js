@@ -205,7 +205,7 @@ function diff(target, typed) {
 }
 
 function renderDiff(item, typedRaw) {
-  const isWord = item.m === 'word';
+  const isWord = item.m !== 'sentence';   // letter diff for word & meaning modes
   const goal = isWord ? normWord(item.t) : normSent(item.t).split(' ');
   const yours = isWord ? normWord(typedRaw) : normSent(typedRaw).split(' ');
   const ops = diff(goal, yours);
@@ -286,21 +286,27 @@ function splitSentences(text) {
 
 const AZ = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
+// source list for the current level+mode (before the A–Z letter filter)
+function basePool() {
+  if (S.mode === 'sentence') return D.sentences[S.level] || [];
+  const base = D.words[S.level] || [];
+  // meaning mode needs a gloss to read out
+  return S.mode === 'meaning' ? base.filter((e) => e.g) : base;
+}
+
 // pool for the current level+mode, honoring the A–Z letter filter
 function poolFor() {
-  const src = S.mode === 'word' ? D.words : D.sentences;
-  const base = src[S.level] || [];
+  const base = basePool();
   if (!S.letters.size) return base;
-  const key = (e) => (S.mode === 'word' ? e.t : (e.w || e.t)).charAt(0).toUpperCase();
+  const key = (e) => (S.mode === 'sentence' ? (e.w || e.t) : e.t).charAt(0).toUpperCase();
   return base.filter((e) => S.letters.has(key(e)));
 }
 
 function renderLetters() {
-  const src = S.mode === 'word' ? D.words : D.sentences;
-  const base = src[S.level] || [];
+  const base = basePool();
   const counts = {};
   for (const e of base) {
-    const L = (S.mode === 'word' ? e.t : (e.w || e.t)).charAt(0).toUpperCase();
+    const L = (S.mode === 'sentence' ? (e.w || e.t) : e.t).charAt(0).toUpperCase();
     counts[L] = (counts[L] || 0) + 1;
   }
   const letters = AZ.filter((L) => counts[L]);
@@ -313,7 +319,7 @@ function renderLetters() {
   $('#letters').innerHTML = html;
 
   const n = poolFor().length;
-  const kind = S.mode === 'word' ? 'words' : 'sentences';
+  const kind = S.mode === 'word' ? 'words' : S.mode === 'meaning' ? 'meanings' : 'sentences';
   const sel = S.letters.size ? [...S.letters].sort().join(', ') : 'ALL';
   $('#letters-count').textContent = `${n.toLocaleString()} ${kind} · ${sel}`;
 }
@@ -388,8 +394,8 @@ function bindHome() {
     renderLetters();
   });
 
-  // 3-way mode group: word / sentence / article
-  const MODES = { '#mode-word': 'word', '#mode-sentence': 'sentence', '#mode-article': 'article' };
+  // 4-way mode group: word / sentence / meaning / article
+  const MODES = { '#mode-word': 'word', '#mode-sentence': 'sentence', '#mode-meaning': 'meaning', '#mode-article': 'article' };
   Object.entries(MODES).forEach(([sel, val]) => {
     $(sel).addEventListener('click', () => {
       S.mode = val;
@@ -444,7 +450,7 @@ const $$ = (s) => [...document.querySelectorAll(s)];
 function itemOf(mode, e) {
   return {
     m: mode, t: e.t, i: e.i || '', p: e.p || '', g: e.g || '', w: e.w || '',
-    ex: mode === 'word' ? (e.ex || []) : [],
+    ex: mode === 'sentence' ? [] : (e.ex || []),
     hint: false,
   };
 }
@@ -497,6 +503,17 @@ const setNext = (v) => {
 
 function cur() { return S.queue[S.i]; }
 
+/* what the speaker says for a card: the word/sentence itself, or its meaning */
+const promptOf = (it) => (it.m === 'meaning' ? it.g : it.t);
+
+/* hide the target word if a gloss happens to contain it */
+function maskWordInGloss(g, w) {
+  if (!g || !w) return g || '';
+  try {
+    return g.replace(new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'ig'), '___');
+  } catch { return g; }
+}
+
 function loadCard() {
   const it = cur();
   S.checked = false;
@@ -504,11 +521,30 @@ function loadCard() {
   // voice for this card: a fresh random one in shuffle mode
   S.curVoice = S.mix ? randomVoice() : VOICE;
 
+  const kind = it.m === 'word' ? 'word' : it.m === 'meaning' ? 'meaning' : 'sentence';
   $('#listen-tag').textContent =
-    `${it.m === 'word' ? 'word' : 'sentence'} · ${S.fromTricky ? 'tricky' : S.fromArticle ? 'article' : S.level}${S.mix ? ' · 🎙' : ''}`;
+    `${kind} · ${S.fromTricky ? 'tricky' : S.fromArticle ? 'article' : S.level}${S.mix ? ' · 🎙' : ''}`;
   $('#listen-sub').textContent =
-    (it.m === 'word' ? 'Listen and write the word' : 'Listen and write the sentence') +
+    (it.m === 'word'
+      ? 'Listen and write the word'
+      : it.m === 'meaning'
+        ? 'Which word means this? Write the word'
+        : 'Listen and write the sentence') +
     (S.mix ? ' — a new voice each card' : '');
+
+  // meaning mode: show the gloss (with the answer masked out of it)
+  const mb = $('#meaning-box');
+  if (it.m === 'meaning') {
+    mb.hidden = false;
+    $('#meaning-txt').textContent = maskWordInGloss(it.g, it.t);
+    const pos = $('#meaning-pos');
+    if (it.p) { pos.hidden = false; pos.textContent = it.p; }
+    else pos.hidden = true;
+  } else {
+    mb.hidden = true;
+  }
+
+  $('#type-label').textContent = it.m === 'meaning' ? 'Type the word it means' : 'Write what you hear';
   $('#hint-line').hidden = true;
 
   // reset answer areas
@@ -534,19 +570,20 @@ function loadCard() {
   play();
 }
 
-function play() { speak(cur().t, S.rate); }
+function play() { speak(promptOf(cur()), S.rate); }
 
 function showHint() {
   const it = cur();
   it.hint = true;
   const el = $('#hint-line');
-  if (it.m === 'word') {
+  if (it.m === 'sentence') {
+    const ws = it.t.split(' ');
+    el.textContent = ws.map((w) => w[0] + '·').join(' ') + `  (${ws.length} words)`;
+  } else {
+    // word & meaning: reveal the first letter, dot the rest
     const letters = it.t.split('');
     el.textContent = letters.map((c, i) =>
       i === 0 || !/[a-z]/i.test(c) ? c : '·').join('');
-  } else {
-    const ws = it.t.split(' ');
-    el.textContent = ws.map((w) => w[0] + '·').join(' ') + `  (${ws.length} words)`;
   }
   el.hidden = false;
 }
@@ -569,14 +606,14 @@ function reveal(diffData, selfAssess) {
   }
 
   $('#reveal-text').textContent = it.t;
-  $('#reveal-ipa').textContent = it.m === 'word' && it.i ? it.i : '';
+  $('#reveal-ipa').textContent = it.m !== 'sentence' && it.i ? it.i : '';
   $('#reveal-gloss').innerHTML = it.g
     ? `<b>${it.m === 'sentence' ? esc(it.w) + ' — ' : ''}${esc(it.g)}</b>`
     : '';
 
-  // word mode: a different example sentence each time this word appears
+  // word & meaning modes: a different example sentence each time this word appears
   const exBox = $('#reveal-ex');
-  if (it.m === 'word' && it.ex && it.ex.length) {
+  if (it.m !== 'sentence' && it.ex && it.ex.length) {
     const s = it.ex[Math.floor(Math.random() * it.ex.length)];
     exBox.hidden = false;
     $('#reveal-ex-text').innerHTML =
@@ -584,6 +621,9 @@ function reveal(diffData, selfAssess) {
   } else {
     exBox.hidden = true;
   }
+
+  // meaning mode: now say the answer word out loud so it sticks
+  if (it.m === 'meaning') setTimeout(() => speak(it.t, S.rate * 0.95), 420);
 
   // diff (type mode only)
   const box = $('#diff-box');
@@ -610,7 +650,7 @@ function checkTyped() {
   if (S.checked) return next();
   const it = cur();
   const raw = $('#type-in').value;
-  const norm = it.m === 'word' ? normWord : normSent;
+  const norm = it.m === 'sentence' ? normSent : normWord;   // meaning answer is a single word
   const ok = norm(raw) === norm(it.t) && norm(it.t).length > 0;
   const d = renderDiff(it, raw);
   d.ok = ok;
@@ -703,7 +743,7 @@ function bindTheme() {
 function bindPractice() {
   $('#btn-back').addEventListener('click', () => { speechSynthesis?.cancel?.(); renderHome(); show('home'); });
   $('#btn-play').addEventListener('click', play);
-  $('#btn-slow').addEventListener('click', () => speak(cur().t, Math.max(0.4, S.rate * 0.55)));
+  $('#btn-slow').addEventListener('click', () => speak(promptOf(cur()), Math.max(0.4, S.rate * 0.55)));
   $('#btn-hint').addEventListener('click', showHint);
 
   $('#btn-check').addEventListener('click', checkTyped);
@@ -736,7 +776,7 @@ function bindPractice() {
     if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.closest('button')) return;
     const k = e.key.toLowerCase();
     if (k === ' ' || k === 'enter') { e.preventDefault(); play(); }
-    if (k === 's') speak(cur().t, Math.max(0.4, S.rate * 0.55));
+    if (k === 's') speak(promptOf(cur()), Math.max(0.4, S.rate * 0.55));
     if (k === 'h') showHint();
     // book-mode self grade
     if (S.answer === 'book' && S.checked) {

@@ -71,7 +71,7 @@ function load() {
   store.set = Object.assign({}, DEFAULT_SET, saved.set || {});
   /* auto-read used to be on by default — turn it off once unless the user chose it */
   if (!ttsWasChosen) store.set.tts = false;
-  if (store.set.mode !== "ask") store.set.mode = "answer";
+  if (!["ask", "role", "shadow"].includes(store.set.mode)) store.set.mode = "answer";
 }
 load();
 
@@ -118,7 +118,7 @@ let quizNavFromTopics = false;
 
 /* ── screens & routing ────────────────────────────────────── */
 
-const SCREENS = ["home", "deck", "practice", "summary", "quiz-home", "quiz", "quiz-result"];
+const SCREENS = ["home", "deck", "practice", "summary", "quiz-home", "quiz", "quiz-result", "role", "shadow", "talk"];
 
 function show(screen) {
   SCREENS.forEach((s) => { $(`#screen-${s}`).hidden = s !== screen; });
@@ -370,22 +370,25 @@ function sessionPool() {
 
 /* ── practice modes ───────────────────────────────────────── */
 
-const modeOf = () => (store.set.mode === "ask" ? "ask" : "answer");
-const MODE_LABEL = { answer: "Answer", ask: "Ask" };
+const modeOf = () => (["ask", "role", "shadow"].includes(store.set.mode) ? store.set.mode : "answer");
+const MODE_LABEL = { answer: "Answer", ask: "Ask", role: "Roleplay", shadow: "Shadow" };
 
 function modeCounts(cards) {
-  let answer = 0;
-  let ask = 0;
+  const out = { answer: 0, ask: 0, role: 0, shadow: 0 };
   (cards || []).forEach((c) => {
-    if (c.kind === "ask") ask++;
-    else if (c.kind === "say" || c.kind === "role") answer++;
+    if (c.kind === "ask") out.ask++;
+    else if (c.kind === "say" || c.kind === "role") out.answer++;
+    if (c.dlg?.length > 1) out.role++;
+    out.shadow++;       /* every card can be shadowed */
   });
-  return { answer, ask };
+  return out;
 }
 
 function modeCards(cards, mode) {
-  const m = mode === "ask" ? "ask" : "answer";
-  return cards.filter((c) => (m === "ask" ? c.kind === "ask" : (c.kind === "say" || c.kind === "role")));
+  if (mode === "ask") return cards.filter((c) => c.kind === "ask");
+  if (mode === "role") return cards.filter((c) => c.dlg?.length > 1);
+  if (mode === "shadow") return [...cards];
+  return cards.filter((c) => c.kind === "say" || c.kind === "role");
 }
 
 function modePool() {
@@ -420,11 +423,11 @@ function updatePartsMeta() {
   const cards = sessionPool();
   const counts = modeCounts(cards);
 
-  /* if the selected parts have no cards for this mode, use the other one */
-  if (counts[modeOf()] === 0) {
-    const other = modeOf() === "answer" ? "ask" : "answer";
-    if (counts[other] > 0) {
-      store.set.mode = other;
+  /* if the selected parts have no cards for this mode, fall back to one that has */
+  if (!counts[modeOf()]) {
+    const fallback = ["answer", "ask", "role", "shadow"].find((m) => counts[m] > 0);
+    if (fallback && fallback !== modeOf()) {
+      store.set.mode = fallback;
       save();
     }
   }
@@ -456,7 +459,7 @@ function renderModePicker(counts) {
   const mode = modeOf();
   const total = (counts.answer || 0) + (counts.ask || 0);
   $$("#mode-picker .mode-card").forEach((btn) => {
-    const m = btn.dataset.mode === "ask" ? "ask" : "answer";
+    const m = btn.dataset.mode;
     const n = counts[m] || 0;
     btn.classList.toggle("on", m === mode);
     btn.setAttribute("aria-pressed", String(m === mode));
@@ -500,7 +503,30 @@ function startFromDeck() {
   }
   rememberSel();
   if (store.set.tts) warmUpSpeech();
-  startSession(pool, curBook.title, curBook.id, modeOf());
+  const mode = modeOf();
+  if (mode === "role") return startRoleSession(buildQueue(pool), curBook.title, curBook.id);
+  if (mode === "shadow") return startShadowSession(buildQueue(pool), curBook.title, curBook.id);
+  startSession(pool, curBook.title, curBook.id, mode);
+}
+
+/* shared queue prep: due-first ordering, shuffle, length cap (same as flashcards) */
+function buildQueue(cards) {
+  let pool = [...cards];
+  if (store.set.due) {
+    const groups = new Map();
+    pool.forEach((c) => {
+      const d = store.srs[c.id]?.d || 0;
+      if (!groups.has(d)) groups.set(d, []);
+      groups.get(d).push(c);
+    });
+    const ordered = [...groups.keys()].sort((a, b) => a - b);
+    pool = ordered.flatMap((d) => (store.set.shuffle ? shuffle(groups.get(d)) : groups.get(d)));
+  } else if (store.set.shuffle) {
+    pool = shuffle(pool);
+  }
+  const len = +store.set.len;
+  if (len > 0) pool = pool.slice(0, len);
+  return pool;
 }
 
 /* ══════════════════ SESSION ═══════════════════════════════ */
@@ -816,10 +842,8 @@ function flip() {
   }
 }
 
-function rate(kind) {
-  const c = cur();
-  if (!c || !flipped) return;
-
+/* shared by flashcards, roleplay and shadowing: SRS box + streak bookkeeping */
+function applyRate(kind, c) {
   sess.rated++;
   if (kind === "again") { sess.again++; sess.againCards.push(c); }
   else if (kind === "good") sess.good++;
@@ -836,6 +860,13 @@ function rate(kind) {
   days.add(todayISO());
   store.days = [...days];
   save();
+}
+
+function rate(kind) {
+  const c = cur();
+  if (!c || !flipped) return;
+
+  applyRate(kind, c);
 
   if (kind === "again" && sess.queue.length < sess.planned + 12) sess.queue.push(c);
 
@@ -847,6 +878,9 @@ function rate(kind) {
 
 function finish() {
   stopSpeaking();
+  stopRoleAudio();
+  stopShadowAudio();
+  stopTalkAudio();
   discardRecording(true);
 
   const done = sess.good + sess.easy;
@@ -912,7 +946,447 @@ function backFromRound() {
 function stopSession() {
   stopSpeaking();
   discardRecording(true);
+  stopRoleAudio();
+  stopShadowAudio();
+  stopTalkAudio();
 }
+
+/* ══════════════════ ROLEPLAY — conversation mode ═══════════ */
+/* The app speaks one side of the card's mini-dialogue, you take the
+   other side turn by turn, then review the whole conversation.     */
+
+const rp = { queue: [], i: 0, t: 0, phase: "idle", done: false };
+let rpWatch = null;
+
+function resetSessCommon(queue, title, bookId, mode) {
+  sess.queue = queue;
+  sess.i = 0;
+  sess.rated = 0;
+  sess.again = 0;
+  sess.good = 0;
+  sess.easy = 0;
+  sess.planned = queue.length;
+  sess.againCards = [];
+  sess.title = title || "Practice";
+  sess.bookId = bookId || null;
+  sess.mode = mode;
+}
+
+function startRoleSession(queue, title, bookId) {
+  if (!queue.length) { toast("No conversation cards here."); return; }
+  rp.queue = queue;
+  rp.i = 0;
+  resetSessCommon(queue, title, bookId, "role");
+  $("#role-deck").textContent = sess.title;
+  show("role");
+  loadDialogue();
+}
+
+function stopRoleAudio() {
+  stopSpeaking();
+  clearTimeout(rpWatch);
+  rpWatch = null;
+}
+
+/* speak one line, then continue — with a watchdog if TTS never fires */
+function rpSpeak(txt, voice, pitch, onDone) {
+  stopSpeaking();
+  let done = false;
+  const fin = () => { if (done) return; done = true; clearTimeout(rpWatch); rpWatch = null; onDone?.(); };
+  const est = Math.max(1400, (txt.length * 78) / (store.set.rate || 0.9)) + 800;
+  if (canSpeak) {
+    try {
+      speechSynthesis.speak(utter(txt, { voice, pitch, onend: fin, onerror: fin }));
+    } catch { fin(); }
+  }
+  rpWatch = setTimeout(fin, est + 1600);
+}
+
+function rpBubble(sp, txt, slot) {
+  const div = document.createElement("div");
+  div.className = `rp-bubble ${sp === "B" ? "me" : "them"}${slot ? " slot" : ""}`;
+  div.innerHTML =
+    `<span class="rp-who">${sp === "B" ? "You" : "Them"}</span>` +
+    `<span class="rp-txt">${slot ? "🎤 Your turn — say your line out loud" : esc(txt)}</span>`;
+  $("#rp-chat").appendChild(div);
+  $("#rp-chat").scrollTop = 1e9;
+  return div;
+}
+
+function updateRoleChrome() {
+  $("#role-count").textContent = `${Math.min(rp.i + 1, rp.queue.length)} / ${rp.queue.length}`;
+  $("#role-bar").style.width = `${(rp.i / Math.max(1, rp.queue.length)) * 100}%`;
+  const c = rp.queue[rp.i];
+  const on = !!c && store.star.includes(c.id);
+  $("#btn-role-star").classList.toggle("on", on);
+  $("#btn-role-star").setAttribute("aria-pressed", String(on));
+}
+
+function loadDialogue() {
+  const c = rp.queue[rp.i];
+  if (!c) return finish();
+  rp.t = 0;
+  rp.done = false;
+  rp.phase = "app";
+  stopRoleAudio();
+  $("#rp-topic").textContent = c.topic || "Conversation";
+  $("#rp-chat").innerHTML = "";
+  $("#rp-end").hidden = true;
+  $("#rp-controls").hidden = false;
+  $("#btn-rp-reveal").innerHTML = "<span>Reveal my line ▸</span>";
+  updateRoleChrome();
+  stepRole();
+}
+
+/* advance the dialogue one turn: app lines speak automatically,
+   user lines wait for you to speak + reveal */
+function stepRole() {
+  const c = rp.queue[rp.i];
+  const turns = c?.dlg || [];
+  if (rp.t >= turns.length) return endDialogue();
+
+  const [sp, txt] = turns[rp.t];
+  if (sp === "B") {
+    rp.phase = "user";
+    $("#btn-rp-reveal").disabled = false;
+    rpBubble("B", "", true);
+    $("#btn-rp-reveal").innerHTML = "<span>Reveal my line ▸</span>";
+    return;
+  }
+
+  /* app line */
+  rp.phase = "app";
+  $("#btn-rp-reveal").disabled = true;      // nothing to reveal while they speak
+  const bub = rpBubble(sp, txt);
+  bub.classList.add("spoken");
+  setTimeout(() => bub.classList.remove("spoken"), 1500);
+  rpSpeak(txt, sp === "B" ? voiceB : voiceA, 1, () => {
+    rp.t += 1;
+    stepRole();
+  });
+}
+
+function rpReveal() {
+  const c = rp.queue[rp.i];
+  const turns = c?.dlg || [];
+  const line = turns[rp.t];
+  if (!line) return;
+
+  if (rp.phase === "user") {
+    rp.phase = "revealed";
+    const slots = $$("#rp-chat .rp-bubble.slot");
+    const slot = slots[slots.length - 1];
+    if (slot) {
+      slot.classList.remove("slot");
+      slot.classList.add("filled");
+      slot.innerHTML =
+        `<span class="rp-who">You</span>` +
+        `<span class="rp-txt">${esc(line[1])}</span>` +
+        `<button type="button" class="play-mini" data-say="${esc(line[1])}" title="Listen" aria-label="Listen to this line">
+           <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg></button>`;
+      slot.querySelector(".play-mini")?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        rpSpeak(line[1], voiceB, 1.12);
+      });
+      $("#rp-chat").scrollTop = 1e9;
+    }
+    $("#btn-rp-reveal").innerHTML = "<span>Continue ▸</span>";
+    return;
+  }
+  if (rp.phase === "revealed") {
+    rp.t += 1;
+    stepRole();
+  }
+}
+
+function rpReplay() {
+  const c = rp.queue[rp.i];
+  const turns = c?.dlg || [];
+  /* replay the last app line before the current user turn */
+  let k = Math.min(rp.t, turns.length - 1);
+  while (k >= 0 && turns[k][0] === "B") k--;
+  const line = k >= 0 ? turns[k] : turns[rp.t];
+  if (line) rpSpeak(line[1], line[0] === "B" ? voiceB : voiceA, 1);
+}
+
+/* keyboard/click primary action */
+function rpPrimary() {
+  if (rp.done) return;
+  if (rp.phase === "user" || rp.phase === "revealed") return rpReveal();
+  rpReplay();
+}
+
+function endDialogue() {
+  rp.phase = "done";
+  rp.done = true;
+  $("#rp-controls").hidden = true;
+  $("#rp-end").hidden = false;
+}
+
+/* play the whole finished conversation, line by line */
+function playRoleAll() {
+  stopRoleAudio();
+  const c = rp.queue[rp.i];
+  const turns = (c?.dlg || []).slice(0, 8);
+  const bubbles = $$("#rp-chat .rp-bubble");
+  let t = 200;
+  turns.forEach(([sp, txt], i) => {
+    dlgTimers.push(setTimeout(() => {
+      bubbles[i]?.classList.add("spoken");
+      if (canSpeak) {
+        try { speechSynthesis.speak(utter(txt, { voice: sp === "B" ? voiceB : voiceA, pitch: sp === "B" ? 1.12 : 1 })); } catch { /* ignore */ }
+      }
+      dlgTimers.push(setTimeout(() => bubbles[i]?.classList.remove("spoken"), 1600));
+    }, t));
+    t += Math.max(1800, (txt.length * 78) / (store.set.rate || 0.9));
+  });
+}
+
+function rateRole(kind) {
+  const c = rp.queue[rp.i];
+  if (!c || !rp.done) return;
+  applyRate(kind, c);
+  if (kind === "again" && rp.queue.length < sess.planned + 12) rp.queue.push(c);
+  rp.i += 1;
+  loadDialogue();
+}
+
+/* ══════════════════ SHADOWING — hear a phrase, repeat it ════ */
+
+const sh = { queue: [], i: 0, chunks: [], k: 0 };
+
+function startShadowSession(queue, title, bookId) {
+  if (!queue.length) { toast("No cards here."); return; }
+  sh.queue = queue;
+  sh.i = 0;
+  resetSessCommon(queue, title, bookId, "shadow");
+  $("#sh-deck").textContent = sess.title;
+  show("shadow");
+  loadShadowCard();
+}
+
+function stopShadowAudio() {
+  stopSpeaking();
+}
+
+/* phrases to shadow for a card: their line, the model, then examples */
+function shadowChunks(c) {
+  const out = [];
+  const push = (t) => {
+    t = String(t || "").trim();
+    if (t && t.split(" ").length >= 2 && !out.includes(t)) out.push(t);
+  };
+  push(promptLine(c));
+  push(modelLine(c));
+  exList(c.ex).forEach((x) => push(x.t));
+  return out.slice(0, 6);
+}
+
+function updateShadowChrome() {
+  const n = sh.queue.length;
+  $("#sh-count-top").textContent = `${Math.min(sh.i + 1, n)} / ${n}`;
+  $("#sh-bar").style.width = `${(sh.i / Math.max(1, n)) * 100}%`;
+  const c = sh.queue[sh.i];
+  const on = !!c && store.star.includes(c.id);
+  $("#btn-sh-star").classList.toggle("on", on);
+  $("#btn-sh-star").setAttribute("aria-pressed", String(on));
+}
+
+function loadShadowCard() {
+  const c = sh.queue[sh.i];
+  if (!c) return finish();
+  sh.chunks = shadowChunks(c);
+  if (!sh.chunks.length) {           /* nothing sayable on this card — skip it */
+    sh.i += 1;
+    return loadShadowCard();
+  }
+  sh.k = 0;
+  stopShadowAudio();
+  $("#sh-meta").textContent = [partName(c), c.topic].filter(Boolean).join(" · ");
+  $("#sh-end").hidden = true;
+  $("#sh-controls").hidden = false;
+  updateShadowChrome();
+  showShadowChunk(true);
+}
+
+function showShadowChunk(autoplay) {
+  const txt = sh.chunks[sh.k];
+  $("#sh-phrase").textContent = txt;
+  $("#sh-count").textContent = `phrase ${sh.k + 1} / ${sh.chunks.length}`;
+  $("#sh-dots").innerHTML = sh.chunks.map((_, i) => `<i class="${i <= sh.k ? "on" : ""}"></i>`).join("");
+  if (autoplay) shadowSpeak(false);
+}
+
+function shadowSpeak(slow) {
+  const txt = sh.chunks[sh.k];
+  if (!txt || !canSpeak) return;
+  stopShadowAudio();
+  try {
+    speechSynthesis.speak(utter(txt, { rate: slow ? 0.62 : undefined }));
+  } catch { /* ignore */ }
+}
+function shadowNext() {
+  if (!$("#sh-end").hidden) return;
+  if (sh.k + 1 < sh.chunks.length) {
+    sh.k += 1;
+    showShadowChunk(true);
+  } else {
+    $("#sh-controls").hidden = true;
+    $("#sh-end").hidden = false;
+  }
+}
+
+/* play every phrase of the card in order */
+function playShadowAll() {
+  stopShadowAudio();
+  let t = 250;
+  sh.chunks.forEach((txt) => {
+    dlgTimers.push(setTimeout(() => {
+      if (canSpeak) { try { speechSynthesis.speak(utter(txt)); } catch { /* ignore */ } }
+    }, t));
+    t += Math.max(1900, (txt.length * 78) / (store.set.rate || 0.9)) + 600;
+  });
+}
+
+function rateShadow(kind) {
+  const c = sh.queue[sh.i];
+  if (!c || !$("#sh-end").hidden) return;
+  applyRate(kind, c);
+  if (kind === "again" && sh.queue.length < sess.planned + 12) sh.queue.push(c);
+  sh.i += 1;
+  loadShadowCard();
+}
+
+/* ══════════════════ 1-MINUTE TALK ══════════════════════════ */
+/* Random topic, 60-second timer, record yourself, listen back. */
+
+const TALK_TOPICS = (() => {
+  const seen = new Set();
+  const out = [];
+  const books = [...BOOKS].sort((a, b) => (b.id === "conv3" ? 1 : 0) - (a.id === "conv3" ? 1 : 0));
+  for (const b of books) {
+    for (const p of b.parts) {
+      for (const c of p.cards) {
+        const t = String(c.topic || "").trim();
+        if (!t || t.length < 4 || seen.has(t)) continue;
+        seen.add(t);
+        out.push(t);
+      }
+    }
+  }
+  return out;
+})();
+
+const tk = { topic: "", phase: "ready", t0: 0, left: 60, tick: null, rec: null, chunks: [], url: "", player: null };
+
+function openTalk() {
+  stopTalkAudio();
+  if (!tk.topic) newTalkTopic();
+  setTalkPhase("ready");
+  $("#tk-bar").style.width = "0%";
+  $("#tk-count").textContent = "⏱ freestyle";
+  show("talk");
+}
+
+function setTalkPhase(p) {
+  tk.phase = p;
+  $("#tk-ready").hidden = p !== "ready";
+  $("#tk-live").hidden = p !== "live";
+  $("#tk-done").hidden = p !== "done";
+}
+
+function newTalkTopic() {
+  tk.topic = TALK_TOPICS[Math.floor(Math.random() * TALK_TOPICS.length)] || "Your day so far";
+  $("#tk-topic").textContent = tk.topic;
+}
+
+async function startTalk() {
+  setTalkPhase("live");
+  tk.t0 = Date.now();
+  tk.left = 60;
+  renderTalkTime();
+  tk.tick = setInterval(talkTick, 250);
+
+  /* record while you talk — best effort, timer works without mic */
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    if (tk.phase !== "live") { stream.getTracks().forEach((t) => t.stop()); return; }
+    tk.chunks = [];
+    tk.rec = new MediaRecorder(stream);
+    tk.rec.ondataavailable = (e) => { if (e.data.size) tk.chunks.push(e.data); };
+    tk.rec.onstop = () => {
+      stream.getTracks().forEach((t) => t.stop());
+      if (!tk.chunks.length) return;
+      if (tk.url) URL.revokeObjectURL(tk.url);
+      tk.url = URL.createObjectURL(new Blob(tk.chunks, { type: tk.rec.mimeType || "audio/webm" }));
+      tk.chunks = [];
+      tk.player = new Audio(tk.url);
+    };
+    tk.rec.start();
+    $("#tk-rec-dot").classList.add("on");
+  } catch {
+    $("#tk-rec-dot").classList.remove("on");
+  }
+}
+
+function talkTick() {
+  tk.left = Math.max(0, 60 - (Date.now() - tk.t0) / 1000);
+  renderTalkTime();
+  if (tk.left <= 0) endTalk();
+}
+
+function renderTalkTime() {
+  const s = Math.ceil(tk.left);
+  $("#tk-time").textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  $("#tk-bar").style.width = `${((60 - tk.left) / 60) * 100}%`;
+  $("#tk-count").textContent = `⏱ ${s}s left`;
+}
+
+function endTalk() {
+  clearInterval(tk.tick);
+  tk.tick = null;
+  try { if (tk.rec?.state === "live") tk.rec.stop(); } catch { /* ignore */ }
+  $("#tk-rec-dot").classList.remove("on");
+  setTalkPhase("done");
+  store.talks = (store.talks || 0) + 1;
+  const days = new Set(store.days);
+  days.add(todayISO());
+  store.days = [...days];
+  save();
+}
+
+function playTalkTake() {
+  if (!tk.player) { toast("No recording — check the mic permission and try again."); return; }
+  stopSpeaking();
+  try { tk.player.currentTime = 0; tk.player.play().catch(() => toast("Could not play that recording.")); } catch { /* ignore */ }
+}
+
+function rateTalk(kind) {
+  toast(kind === "easy" ? "Fluent! 🌟" : kind === "good" ? "Nice — keep the streak going 🔥" : "Rough talks make you stronger 💪");
+  stopTalkAudio();
+  newTalkTopic();
+  setTalkPhase("ready");
+  $("#tk-bar").style.width = "0%";
+  $("#tk-count").textContent = "⏱ freestyle";
+}
+
+function rateTalkReset() {
+  stopTalkAudio();
+  newTalkTopic();
+  setTalkPhase("ready");
+  $("#tk-bar").style.width = "0%";
+  $("#tk-count").textContent = "⏱ freestyle";
+}
+
+function stopTalkAudio() {
+  clearInterval(tk.tick);
+  tk.tick = null;
+  try { if (tk.rec?.state === "live") tk.rec.stop(); } catch { /* ignore */ }
+  const dot = $("#tk-rec-dot");
+  dot?.classList.remove("on");
+  try { tk.player?.pause(); } catch { /* ignore */ }
+}
+
 
 /* ══════════════════ GRAMMAR QUIZ ══════════════════════════ */
 
@@ -1310,6 +1784,9 @@ function stopAllAudio() {
   stopSpeaking();
   stopRecPlayback();
   if (rec.state === "live" || rec.state === "starting") discardRecording(true);
+  clearTimeout(rpWatch);
+  rpWatch = null;
+  stopTalkAudio();
 }
 
 /* ══════════════════ SPEECH (TTS) ══════════════════════════ */
@@ -1349,10 +1826,10 @@ if (canSpeak) {
   pickVoices();
 }
 
-function utter(text, { voice = voiceA, pitch = 1, onstart, onend, onerror } = {}) {
+function utter(text, { voice = voiceA, pitch = 1, rate, onstart, onend, onerror } = {}) {
   const u = new SpeechSynthesisUtterance(text);
   if (voice) u.voice = voice;
-  u.rate = store.set.rate;
+  u.rate = rate || store.set.rate;
   u.pitch = pitch;
   if (onstart) u.onstart = onstart;
   if (onend) u.onend = onend;
@@ -1662,7 +2139,7 @@ function wire() {
 
   $$("#mode-picker .mode-card").forEach((btn) => btn.addEventListener("click", () => {
     if (btn.disabled) return;
-    const m = btn.dataset.mode === "ask" ? "ask" : "answer";
+    const m = btn.dataset.mode;
     if (m === store.set.mode) return;
     store.set.mode = m;
     save();
@@ -1733,6 +2210,43 @@ function wire() {
   $("#btn-star").addEventListener("click", toggleStar);
   $$(".rate").forEach((b) => b.addEventListener("click", () => rate(b.dataset.rate)));
 
+  /* roleplay */
+  $("#btn-role-exit").addEventListener("click", backFromRound);
+  $("#btn-rp-reveal").addEventListener("click", rpPrimary);
+  $("#btn-rp-replay").addEventListener("click", rpReplay);
+  $("#btn-rp-all").addEventListener("click", playRoleAll);
+  $$("[data-rp-rate]").forEach((b) => b.addEventListener("click", () => rateRole(b.dataset.rpRate)));
+  $("#btn-role-star").addEventListener("click", () => {
+    const c = rp.queue[rp.i];
+    if (!c) return;
+    starCard(c);
+    updateRoleChrome();
+  });
+
+  /* shadowing */
+  $("#btn-sh-exit").addEventListener("click", backFromRound);
+  $("#btn-sh-play").addEventListener("click", () => shadowSpeak(false));
+  $("#btn-sh-slow").addEventListener("click", () => shadowSpeak(true));
+  $("#btn-sh-next").addEventListener("click", shadowNext);
+  $("#btn-sh-star").addEventListener("click", () => {
+    const c = sh.queue[sh.i];
+    if (!c) return;
+    starCard(c);
+    updateShadowChrome();
+  });
+  $("#btn-sh-all").addEventListener("click", playShadowAll);
+  $$("[data-sh-rate]").forEach((b) => b.addEventListener("click", () => rateShadow(b.dataset.shRate)));
+
+  /* 1-minute talk */
+  $("#btn-talk").addEventListener("click", () => { if (store.set.tts) warmUpSpeech(); openTalk(); });
+  $("#btn-talk-exit").addEventListener("click", () => { stopTalkAudio(); goHome(); });
+  $("#btn-tk-topic").addEventListener("click", newTalkTopic);
+  $("#btn-tk-start").addEventListener("click", startTalk);
+  $("#btn-tk-done").addEventListener("click", endTalk);
+  $("#btn-tk-play").addEventListener("click", playTalkTake);
+  $("#btn-tk-new").addEventListener("click", () => rateTalkReset());
+  $$("[data-tk-rate]").forEach((b) => b.addEventListener("click", () => rateTalk(b.dataset.tkRate)));
+
   $("#btn-sum-back").addEventListener("click", backFromRound);
   $("#btn-back-deck").addEventListener("click", backFromRound);
   $("#btn-home").addEventListener("click", goHome);
@@ -1740,6 +2254,8 @@ function wire() {
     const againCards = [...sess.againCards];
     if (!againCards.length) return;
     if (store.set.tts) warmUpSpeech();
+    if (sess.mode === "role") return startRoleSession(buildQueue(againCards), "Again conversations", sess.bookId);
+    if (sess.mode === "shadow") return startShadowSession(buildQueue(againCards), "Again cards", sess.bookId);
     startSession(againCards, "Again cards", sess.bookId, sess.mode);
   });
 
@@ -1814,6 +2330,9 @@ function wire() {
     const quizScreen = !$("#screen-quiz").hidden;
     const quizTopics = !$("#screen-quiz-home").hidden;
     const quizResult = !$("#screen-quiz-result").hidden;
+    const roleScreen = !$("#screen-role").hidden;
+    const shadowScreen = !$("#screen-shadow").hidden;
+    const talkScreen = !$("#screen-talk").hidden;
     const onButton = !!e.target.closest?.("button");
 
     if (quizScreen) {
@@ -1840,7 +2359,22 @@ function wire() {
     if (quizTopics && e.key === "Escape") { e.preventDefault(); goHome(); return; }
     if (quizResult && e.key === "Escape") { e.preventDefault(); quizToTopics(); return; }
 
-    if (practice) {
+    if (roleScreen) {
+      if (e.key === "Escape") { e.preventDefault(); backFromRound(); }
+      else if (e.code === "Space" && !onButton) { e.preventDefault(); rpPrimary(); }
+      else if (e.key === "r" || e.key === "R") rpReplay();
+      else if (e.key === "s" || e.key === "S") $("#btn-role-star").click();
+      else if (["1", "2", "3"].includes(e.key) && rp.done) rateRole(["again", "good", "easy"][+e.key - 1]);
+    } else if (shadowScreen) {
+      if (e.key === "Escape") { e.preventDefault(); backFromRound(); }
+      else if (e.code === "Space" && !onButton) { e.preventDefault(); shadowSpeak(false); }
+      else if (e.key === "Enter" && !onButton) { e.preventDefault(); shadowNext(); }
+      else if (e.key === "s" || e.key === "S") $("#btn-sh-star").click();
+      else if (["1", "2", "3"].includes(e.key) && !$("#sh-end").hidden) rateShadow(["again", "good", "easy"][+e.key - 1]);
+    } else if (talkScreen) {
+      if (e.key === "Escape") { e.preventDefault(); stopTalkAudio(); goHome(); }
+      else if ((e.code === "Space" || e.key === "Enter") && !onButton && tk.phase === "ready") { e.preventDefault(); startTalk(); }
+    } else if (practice) {
       if (e.code === "Space" && !onButton) { e.preventDefault(); flip(); }
       else if (e.key === "r" || e.key === "R") toggleHear();
       else if (e.key === "s" || e.key === "S") toggleStar();
@@ -1856,17 +2390,21 @@ function wire() {
   });
 }
 
-function toggleStar() {
-  const c = cur();
-  if (!c) return;
+function starCard(c) {
   const i = store.star.indexOf(c.id);
   if (i >= 0) store.star.splice(i, 1);
   else store.star.push(c.id);
   save();
-  const on = i < 0;
+  toast(i < 0 ? "Added to tricky cards ★" : "Removed from tricky cards");
+}
+
+function toggleStar() {
+  const c = cur();
+  if (!c) return;
+  starCard(c);
+  const on = store.star.includes(c.id);
   $("#btn-star").classList.toggle("on", on);
   $("#btn-star").setAttribute("aria-pressed", String(on));
-  toast(on ? "Added to tricky cards ★" : "Removed from tricky cards");
 }
 
 /* ── go ───────────────────────────────────────────────────── */

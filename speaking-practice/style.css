@@ -1876,3 +1876,275 @@ mark.slot {
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .card-inner { transition: none !important; }
 }
+
+/* ══════════════════ ROLEPLAY — conversation mode ═══════════ */
+
+.screen-role .p-mid { flex: 1; }
+
+.rp-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.rp-topic {
+  font-family: var(--disp);
+  font-weight: 800;
+  font-size: clamp(18px, 3.4vw, 24px);
+  text-align: center;
+  color: var(--ink);
+}
+
+.rp-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-height: 200px;
+  max-height: 46vh;
+  overflow-y: auto;
+  padding: 14px 4px 6px;
+  scroll-behavior: smooth;
+}
+
+.rp-bubble {
+  max-width: 86%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 13px;
+  border-radius: 16px;
+  animation: screenIn .22s ease both;
+}
+.rp-bubble.them {
+  align-self: flex-start;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-bottom-left-radius: 6px;
+}
+.rp-bubble.me {
+  align-self: flex-end;
+  background: color-mix(in srgb, var(--teal) 14%, var(--card));
+  border: 1.5px solid color-mix(in srgb, var(--teal) 35%, transparent);
+  border-bottom-right-radius: 6px;
+}
+.rp-bubble.slot { border-style: dashed; background: var(--card-soft); }
+.rp-bubble.slot .rp-txt { color: var(--mut); font-style: italic; }
+.rp-bubble.filled { border-style: solid; }
+.rp-bubble.spoken { box-shadow: 0 0 0 2.5px color-mix(in srgb, var(--violet) 55%, transparent); }
+
+.rp-who {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--mut);
+}
+.rp-bubble.them .rp-who { color: var(--violet); }
+.rp-bubble.me .rp-who { color: var(--teal); }
+
+.rp-txt {
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+  word-break: break-word;
+}
+.rp-bubble .play-mini { margin-top: 5px; }
+
+.rp-controls {
+  display: flex;
+  gap: 9px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.rp-end {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0 4px;
+  animation: screenIn .26s ease both;
+}
+.rp-end-title {
+  font-family: var(--disp);
+  font-weight: 800;
+  font-size: 19px;
+  color: var(--teal);
+}
+
+/* ══════════════════ SHADOWING ══════════════════════════════ */
+
+.sh-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+}
+
+.sh-meta {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--mut);
+  text-align: center;
+}
+
+.sh-box {
+  width: 100%;
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: 22px;
+  padding: 22px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow);
+}
+
+.sh-count {
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.sh-phrase {
+  font-family: var(--disp);
+  font-weight: 700;
+  font-size: clamp(21px, 4.4vw, 30px);
+  line-height: 1.25;
+  text-align: center;
+  color: var(--ink);
+  min-height: 2.6em;
+  display: flex;
+  align-items: center;
+}
+
+.sh-dots { display: flex; gap: 6px; }
+.sh-dots i {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--line);
+  transition: background .2s, transform .2s;
+}
+.sh-dots i.on { background: var(--teal); transform: scale(1.15); }
+
+.sh-controls {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.sh-end {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 0 2px;
+  animation: screenIn .26s ease both;
+}
+.sh-end-title {
+  font-family: var(--disp);
+  font-weight: 800;
+  font-size: 19px;
+  color: var(--teal);
+}
+.sh-end .ratebar { width: 100%; }
+
+/* ══════════════════ 1-MINUTE TALK ══════════════════════════ */
+
+.tk-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.tk-topic-card {
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: 22px;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.tk-kicker {
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--coral);
+}
+
+.tk-topic {
+  font-family: var(--disp);
+  font-weight: 800;
+  font-size: clamp(24px, 5.4vw, 38px);
+  line-height: 1.12;
+  color: var(--ink);
+}
+
+.tk-tip { font-size: 13px; font-weight: 600; color: var(--mut); max-width: 44ch; }
+
+.tk-phase {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.tk-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 34px;
+  border-radius: 24px;
+  background: var(--card);
+  border: 2px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.tk-timer b {
+  font-family: var(--disp);
+  font-weight: 800;
+  font-size: clamp(44px, 11vw, 68px);
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.tk-rec {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--mut);
+}
+.tk-rec.on { color: var(--coral); animation: micblink 1.2s ease-in-out infinite; }
+
+.tk-note { font-size: 12.5px; color: var(--mut); font-weight: 600; text-align: center; }
+
+.tk-done-title {
+  font-family: var(--disp);
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--teal);
+  text-align: center;
+}
+
+.tk-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+/* talk entry on home: warm coral accent */
+.quiz-entry.talk:hover { border-color: var(--coral); }
+.quiz-entry.talk .quiz-entry-ico { font-size: 22px; }

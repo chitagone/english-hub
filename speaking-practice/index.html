@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
 
@@ -57,6 +57,18 @@
       <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 3l2.7 5.6 6.3.8-4.6 4.3 1.2 6.2L12 17l-5.6 2.9 1.2-6.2L3 9.4l6.3-.8z"/></svg>
       <span id="tricky-text"><b id="tricky-n">0</b> tricky cards waiting</span>
       <span class="ghost-cta-arrow" aria-hidden="true">→</span>
+    </button>
+  </div>
+
+  <div class="quiz-entry-wrap" id="talk-entry-wrap">
+    <div class="shelf-label">Freestyle</div>
+    <button id="btn-talk" class="quiz-entry talk">
+      <span class="quiz-entry-ico" aria-hidden="true">⏱</span>
+      <span class="quiz-entry-copy">
+        <b>1-minute talk</b>
+        <small>random topic · timer · record yourself</small>
+      </span>
+      <span class="quiz-entry-go" aria-hidden="true">→</span>
     </button>
   </div>
 
@@ -155,6 +167,20 @@
         </span>
         <span class="mode-copy"><b>Ask</b><small>You ask the question</small></span>
         <span class="mode-n"><b id="mode-ask-n">0</b><small>cards</small></span>
+      </button>
+      <button type="button" class="mode-card" data-mode="role" aria-pressed="false">
+        <span class="mode-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="8" cy="9" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M2.8 19c.6-3 2.7-4.6 5.2-4.6S12.6 16 13.2 19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="16.4" cy="10.6" r="2.6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M15.4 15c2.7-.3 4.9 1.2 5.6 4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        </span>
+        <span class="mode-copy"><b>Roleplay</b><small>full conversation, turn by turn</small></span>
+        <span class="mode-n"><b id="mode-role-n">0</b><small>chats</small></span>
+      </button>
+      <button type="button" class="mode-card" data-mode="shadow" aria-pressed="false">
+        <span class="mode-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M16.5 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M7 3.5c-.6 1 .6 1.5 0 2.5M10 3.5c-.6 1 .6 1.5 0 2.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </span>
+        <span class="mode-copy"><b>Shadow</b><small>hear a phrase, repeat it</small></span>
+        <span class="mode-n"><b id="mode-shadow-n">0</b><small>cards</small></span>
       </button>
     </div>
   </section>
@@ -471,6 +497,177 @@
 </section>
 
 
+<!-- ══════════════════ ROLEPLAY ══════════════════ -->
+<section id="screen-role" class="screen screen-role" hidden>
+  <header class="p-top">
+    <button id="btn-role-exit" class="icon-btn" title="Back to the deck (Esc)" aria-label="Back to the deck">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="p-mid">
+      <span class="p-deck" id="role-deck">Roleplay</span>
+      <div class="p-progress" aria-hidden="true"><div id="role-bar"></div></div>
+    </div>
+    <div class="p-count" id="role-count" aria-live="polite">1 / 10</div>
+    <button id="btn-role-star" class="icon-btn star-btn" title="Mark as tricky (S)" aria-label="Mark as tricky" aria-pressed="false">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 3l2.7 5.6 6.3.8-4.6 4.3 1.2 6.2L12 17l-5.6 2.9 1.2-6.2L3 9.4l6.3-.8z"/></svg>
+    </button>
+  </header>
+
+  <div class="rp-wrap">
+    <div class="rp-topic" id="rp-topic"></div>
+    <div class="rp-chat" id="rp-chat" aria-live="polite"></div>
+
+    <div class="rp-controls" id="rp-controls">
+      <button id="btn-rp-replay" class="ctl">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span>Hear again</span>
+      </button>
+      <button id="btn-rp-reveal" class="ctl primary">
+        <span>Reveal my line ▸</span>
+      </button>
+    </div>
+
+    <div id="rp-end" class="rp-end" hidden>
+      <p class="rp-end-title">✿ Conversation complete</p>
+      <button id="btn-rp-all" class="ctl teal">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>
+        <span>Play whole conversation</span>
+      </button>
+      <div class="ratebar" id="rp-ratebar">
+        <span class="rate-q">How did the conversation feel?</span>
+        <div class="rate-btns">
+          <button class="rate r-again" data-rp-rate="again"><b>Again</b><small>I struggled</small></button>
+          <button class="rate r-good" data-rp-rate="good"><b>Good</b><small>got there</small></button>
+          <button class="rate r-easy" data-rp-rate="easy"><b>Easy</b><small>nailed it</small></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ SHADOWING ══════════════════ -->
+<section id="screen-shadow" class="screen screen-shadow" hidden>
+  <header class="p-top">
+    <button id="btn-sh-exit" class="icon-btn" title="Back to the deck (Esc)" aria-label="Back to the deck">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="p-mid">
+      <span class="p-deck" id="sh-deck">Shadowing</span>
+      <div class="p-progress" aria-hidden="true"><div id="sh-bar"></div></div>
+    </div>
+    <div class="p-count" id="sh-count-top" aria-live="polite">1 / 10</div>
+    <button id="btn-sh-star" class="icon-btn star-btn" title="Mark as tricky (S)" aria-label="Mark as tricky" aria-pressed="false">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 3l2.7 5.6 6.3.8-4.6 4.3 1.2 6.2L12 17l-5.6 2.9 1.2-6.2L3 9.4l6.3-.8z"/></svg>
+    </button>
+  </header>
+
+  <div class="sh-wrap">
+    <div class="sh-meta" id="sh-meta"></div>
+    <div class="sh-box">
+      <div class="sh-count" id="sh-count">phrase 1 / 5</div>
+      <p class="sh-phrase" id="sh-phrase"></p>
+      <div class="sh-dots" id="sh-dots"></div>
+    </div>
+    <div class="sh-controls" id="sh-controls">
+      <button id="btn-sh-play" class="ctl" title="Play the phrase (Space)">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>
+        <span>Listen</span>
+      </button>
+      <button id="btn-sh-slow" class="ctl" title="Play slowly">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 4a8 8 0 1 1-8 8h2a6 6 0 1 0 6-6zm1 4v5l-4 2.2-.9-1.6L11 12V8z"/></svg>
+        <span>Slow</span>
+      </button>
+      <button id="btn-sh-next" class="ctl primary" title="Next phrase (Enter)">
+        <span>I said it ▸</span>
+      </button>
+    </div>
+
+    <div id="sh-end" class="sh-end" hidden>
+      <p class="sh-end-title">✿ All phrases done</p>
+      <button id="btn-sh-all" class="ctl teal">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>
+        <span>Play all in order</span>
+      </button>
+      <div class="ratebar" id="sh-ratebar">
+        <span class="rate-q">How was your shadowing?</span>
+        <div class="rate-btns">
+          <button class="rate r-again" data-sh-rate="again"><b>Again</b><small>hard work</small></button>
+          <button class="rate r-good" data-sh-rate="good"><b>Good</b><small>kept up</small></button>
+          <button class="rate r-easy" data-sh-rate="easy"><b>Easy</b><small>smooth</small></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ 1-MINUTE TALK ══════════════════ -->
+<section id="screen-talk" class="screen screen-talk" hidden>
+  <header class="p-top">
+    <button id="btn-talk-exit" class="icon-btn" title="Back to decks (Esc)" aria-label="Back to decks">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="p-mid">
+      <span class="p-deck">1-minute talk</span>
+      <div class="p-progress" aria-hidden="true"><div id="tk-bar"></div></div>
+    </div>
+    <div class="p-count" id="tk-count">⏱ freestyle</div>
+  </header>
+
+  <div class="tk-wrap">
+    <div class="tk-topic-card" id="tk-topic-card">
+      <span class="tk-kicker">Talk about</span>
+      <h2 class="tk-topic" id="tk-topic"></h2>
+      <p class="tk-tip" id="tk-tip">Keep talking — don't stop for words you miss, say them another way.</p>
+    </div>
+
+    <!-- ready -->
+    <div class="tk-phase" id="tk-ready">
+      <button id="btn-tk-topic" class="ctl">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
+        <span>New topic</span>
+      </button>
+      <button id="btn-tk-start" class="cta">
+        <span>Start — 1 minute</span>
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <p class="tk-note">Recording starts with the timer (if the mic is allowed).</p>
+    </div>
+
+    <!-- live -->
+    <div class="tk-phase" id="tk-live" hidden>
+      <div class="tk-timer">
+        <b id="tk-time">1:00</b>
+        <span class="tk-rec" id="tk-rec-dot" aria-hidden="true">● rec</span>
+      </div>
+      <button id="btn-tk-done" class="ctl">⏹ I'm done early</button>
+    </div>
+
+    <!-- done -->
+    <div class="tk-phase" id="tk-done" hidden>
+      <p class="tk-done-title">Time! 🎉 How did that feel?</p>
+      <div class="tk-actions">
+        <button id="btn-tk-play" class="ctl teal">
+          <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>
+          <span>Play my take</span>
+        </button>
+        <button id="btn-tk-new" class="ctl">
+          <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
+          <span>New topic</span>
+        </button>
+      </div>
+      <div class="ratebar">
+        <span class="rate-q">Rate your talk</span>
+        <div class="rate-btns">
+          <button class="rate r-again" data-tk-rate="again"><b>Rough</b><small>keep practising</small></button>
+          <button class="rate r-good" data-tk-rate="good"><b>OK</b><small>kept going</small></button>
+          <button class="rate r-easy" data-tk-rate="easy"><b>Great</b><small>fluent!</small></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
 <div id="drawer-scrim" hidden aria-hidden="true"></div>
 <aside id="drawer" class="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="drawer-title">
   <div class="drawer-head">
@@ -506,6 +703,6 @@
 
 <script src="data.js"></script>
 <script src="quiz-data.js?v=5"></script>
-<script src="app.js?v=7"></script>
+<script src="app.js?v=8"></script>
 </body>
 </html>

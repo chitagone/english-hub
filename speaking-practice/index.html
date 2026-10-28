@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="style.css?v=9">
+<link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
 
@@ -280,6 +280,13 @@
             <div class="c-line-box" id="c-line-box">
               <span class="c-line-label" id="c-line-label">They say</span>
               <p class="c-line" id="c-line"></p>
+            </div>
+            <div class="cheat" id="cheat">
+              <button id="btn-cheat" class="cheat-toggle" aria-expanded="false"
+                title="Show the pattern &amp; examples while you answer — great for beginners">
+                📖 Show what to say
+              </button>
+              <div class="cheat-body" id="cheat-body" hidden></div>
             </div>
             <div class="c-cue" id="c-cue" hidden></div>
             <div class="c-hint" id="c-hint"></div>
@@ -707,6 +714,10 @@
     <input type="checkbox" id="set-tts">
     <span>Read cards aloud <small>The app reads each prompt aloud as it appears</small></span>
   </label>
+  <label class="opt opt-check big">
+    <input type="checkbox" id="set-cheat">
+    <span>Show what to say <small>Beginner mode — patterns &amp; examples on every card, and your lines in roleplay</small></span>
+  </label>
   <label class="opt big">
     <span>Voice</span>
     <select id="set-voice"><option value="">Loading voices…</option></select>
@@ -732,6 +743,6 @@
 
 <script src="data.js"></script>
 <script src="quiz-data.js?v=5"></script>
-<script src="app.js?v=10"></script>
+<script src="app.js?v=11"></script>
 </body>
 </html>

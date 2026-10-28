@@ -2247,3 +2247,73 @@ mark.slot {
 }
 
 .tk-model-btn { align-self: center; }
+
+/* ── beginner mode: "what to say" on the card front ────────── */
+
+.cheat {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.cheat-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--disp);
+  font-weight: 700;
+  font-size: 14.5px;
+  color: var(--amber);
+  background: var(--amber-soft);
+  border: 1.5px solid color-mix(in srgb, var(--amber) 40%, transparent);
+  border-radius: 999px;
+  padding: 8px 16px;
+  transition: transform .13s;
+}
+.cheat-toggle:active { transform: scale(.96); }
+.cheat-toggle.on {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: #fff;
+}
+
+.cheat-body {
+  width: 100%;
+  margin-top: 4px;
+  padding: 12px 14px 14px;
+  background: var(--card-soft);
+  border: 1.5px dashed color-mix(in srgb, var(--amber) 45%, var(--line));
+  border-radius: 16px;
+  text-align: left;
+  animation: screenIn .22s ease both;
+}
+.cheat-body .b-sec:first-child { margin-top: 0; }
+.cheat-body .b-label { color: var(--amber); }
+.cheat-body .frame-box { background: var(--card); }
+.cheat-body .model-box { background: var(--card); }
+
+/* roleplay: alternative lines in beginner mode */
+.rp-alts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 7px;
+  font-size: 12.5px;
+  color: var(--mut);
+  font-weight: 700;
+}
+.rp-alts em { font-style: normal; font-size: 11px; text-transform: uppercase; letter-spacing: .8px; }
+.rp-alt {
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--teal);
+  background: var(--teal-soft);
+  border: 1px solid color-mix(in srgb, var(--teal) 30%, transparent);
+  border-radius: 999px;
+  padding: 4px 11px;
+  transition: transform .12s;
+}
+.rp-alt:active { transform: scale(.95); }

@@ -34,6 +34,7 @@ const QUIZ_SCORE_VERSION = 2;
 const DEFAULT_SET = {
   tts: false,
   ttsManual: false,
+  cheat: false,
   rate: 0.9,
   voiceURI: "",
   theme: "auto",
@@ -670,6 +671,7 @@ function showCard() {
   lineBox.hidden = false;
 
   buildBack(c, mode);
+  syncCheat();
 
   if (store.set.tts && !document.hidden) {
     clearTimeout(speakQuestion._t);
@@ -800,7 +802,17 @@ function buildBack(c, mode = "answer") {
   $("#back-scroll").scrollTop = 0;
   requestAnimationFrame(updateBackScrollHint);
 
-  $$("#back-body [data-say]").forEach((el) => {
+  bindSay($("#back-body"));
+
+  $("#btn-play-dlg")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    playDialogue(c.dlg);
+  });
+}
+
+/* make every [data-say] element speak its text on click / Enter */
+function bindSay(root) {
+  root.querySelectorAll("[data-say]").forEach((el) => {
     const go = (e) => {
       if (e) e.stopPropagation();
       speakText(el.dataset.say);
@@ -814,11 +826,60 @@ function buildBack(c, mode = "answer") {
       }
     });
   });
+}
 
-  $("#btn-play-dlg")?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    playDialogue(c.dlg);
-  });
+/* ── beginner mode: pattern + examples on the card FRONT ──── */
+
+function cheatHTML(c, mode = "answer") {
+  const askMode = mode === "ask";
+  let h = "";
+
+  if (askMode) {
+    if (c.q) {
+      h += `<div class="b-sec"><div class="b-label">The question</div>
+        <div class="question-box">${playBtn(c.q)}<div class="mb-txt">${esc(c.q)}</div></div></div>`;
+    }
+    if (c.frame) {
+      h += `<div class="b-sec"><div class="b-label">Pattern — how to ask</div>
+        <div class="frame-box">${slotify(c.frame)}</div></div>`;
+    }
+    const askExs = exList(c.ex, [c.q]);
+    if (askExs.length) {
+      h += `<div class="b-sec"><div class="b-label">More ways to ask — tap to hear</div>${exRows(askExs)}</div>`;
+    }
+  } else {
+    if (c.frame) {
+      h += `<div class="b-sec"><div class="b-label">Pattern — how to answer</div>
+        <div class="frame-box">${slotify(c.frame)}</div></div>`;
+    }
+    const model = modelLine(c);
+    if (model) {
+      h += `<div class="b-sec"><div class="b-label">You can say</div>
+        <div class="model-box">${playBtn(model)}<div class="mb-txt">${esc(model)}</div></div></div>`;
+    }
+    const exs = c.kind === "role" ? [] : exList(c.ex, [model, promptLine(c)]);
+    if (exs.length) {
+      h += `<div class="b-sec"><div class="b-label">More ways to say it — tap to hear</div>${exRows(exs)}</div>`;
+    }
+  }
+
+  return h || `<div class="b-sec"><p class="gram-rule">Answer in your own words — any natural reply is fine.</p></div>`;
+}
+
+function syncCheat() {
+  const c = cur();
+  if (!c) return;
+  const on = !!store.set.cheat;
+  const btn = $("#btn-cheat");
+  btn.setAttribute("aria-expanded", String(on));
+  btn.classList.toggle("on", on);
+  btn.innerHTML = on ? "📖 Hide what to say" : "📖 Show what to say";
+  const body = $("#cheat-body");
+  body.hidden = !on;
+  if (on) {
+    body.innerHTML = cheatHTML(c, sess.mode);
+    bindSay(body);
+  }
 }
 
 /* ── flip / rate ──────────────────────────────────────────── */
@@ -1068,6 +1129,7 @@ function stepRole() {
     $("#btn-rp-reveal").disabled = false;
     rpBubble("B", "", true);
     $("#btn-rp-reveal").innerHTML = "<span>Reveal my line ▸</span>";
+    if (store.set.cheat) rpFillSlot();   // beginner mode: show the line right away
     return;
   }
 
@@ -1083,33 +1145,47 @@ function stepRole() {
   });
 }
 
-function rpReveal() {
+function rpFillSlot() {
   const c = rp.queue[rp.i];
   const turns = c?.dlg || [];
   const line = turns[rp.t];
   if (!line) return;
+  rp.phase = "revealed";
 
-  if (rp.phase === "user") {
-    rp.phase = "revealed";
-    const slots = $$("#rp-chat .rp-bubble.slot");
-    const slot = slots[slots.length - 1];
-    if (slot) {
-      slot.classList.remove("slot");
-      slot.classList.add("filled");
-      slot.innerHTML =
-        `<span class="rp-who">You</span>` +
-        `<span class="rp-txt">${esc(line[1])}</span>` +
-        `<button type="button" class="play-mini" data-say="${esc(line[1])}" title="Listen" aria-label="Listen to this line">
-           <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg></button>`;
-      slot.querySelector(".play-mini")?.addEventListener("click", (e) => {
-        e.stopPropagation();
-        rpSpeak(line[1], voiceB, 1.12);
-      });
-      $("#rp-chat").scrollTop = 1e9;
-    }
-    $("#btn-rp-reveal").innerHTML = "<span>Continue ▸</span>";
-    return;
+  const slots = $$("#rp-chat .rp-bubble.slot");
+  const slot = slots[slots.length - 1];
+  if (!slot) return;
+
+  /* beginner mode: also offer alternative ways to say the same thing */
+  const alts = store.set.cheat
+    ? exList(c.ex).map((x) => x.t).filter((t) => t && t !== line[1]).slice(0, 2)
+    : [];
+
+  let h =
+    `<span class="rp-who">You</span>` +
+    `<span class="rp-txt">${esc(line[1])}</span>` +
+    `<button type="button" class="play-mini" data-say="${esc(line[1])}" title="Listen" aria-label="Listen to this line">
+       <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg></button>`;
+  if (alts.length) {
+    h += `<span class="rp-alts"><em>or:</em> ${alts.map((a) =>
+      `<button type="button" class="rp-alt" data-say="${esc(a)}">“${esc(a)}”</button>`).join(" ")}</span>`;
   }
+
+  slot.classList.remove("slot");
+  slot.classList.add("filled");
+  slot.innerHTML = h;
+  slot.querySelectorAll("[data-say]").forEach((b) => {
+    b.addEventListener("click", (e) => {
+      e.stopPropagation();
+      rpSpeak(b.dataset.say, voiceB, 1.12);
+    });
+  });
+  $("#rp-chat").scrollTop = 1e9;
+  $("#btn-rp-reveal").innerHTML = "<span>Continue ▸</span>";
+}
+
+function rpReveal() {
+  if (rp.phase === "user") return rpFillSlot();
   if (rp.phase === "revealed") {
     rp.t += 1;
     stepRole();
@@ -2169,6 +2245,7 @@ function openDrawer(open) {
 
 function syncSettingsUI() {
   $("#set-tts").checked = !!store.set.tts;
+  $("#set-cheat").checked = !!store.set.cheat;
   $("#set-rate").value = store.set.rate;
   $("#set-rate-n").textContent = `${Number(store.set.rate).toFixed(2).replace(/0$/, "")}×`;
   $("#set-theme").value = store.set.theme;
@@ -2276,7 +2353,7 @@ function wire() {
   });
 
   $("#card").addEventListener("click", (e) => {
-    if (e.target.closest("button, a, input, select, [data-say]")) return;
+    if (e.target.closest("button, a, input, select, [data-say], .cheat-body")) return;
     flip();
   });
   $("#card").addEventListener("keydown", (e) => {
@@ -2377,6 +2454,17 @@ function wire() {
     store.set.ttsManual = true;
     save();
     if (!store.set.tts) stopSpeaking();
+  });
+  $("#set-cheat").addEventListener("change", (e) => {
+    store.set.cheat = e.target.checked;
+    save();
+    if (!$("#screen-practice").hidden) syncCheat();
+  });
+  $("#btn-cheat").addEventListener("click", () => {
+    store.set.cheat = !store.set.cheat;
+    save();
+    syncCheat();
+    syncSettingsUI();
   });
   $("#set-voice").addEventListener("change", (e) => {
     store.set.voiceURI = e.target.value;

@@ -1,7 +1,8 @@
-# English Hub ✿✎
+# English Hub ✿✎⇄
 
-Speaking + dictation practice apps, built from my own English books
-(Master Vocab · Conversation Pattern Books · Grammar & Sentence Patterns).
+Speaking + dictation + flip-card practice apps, built from my own English books
+(Master Vocab · Conversation Pattern Books · Grammar & Sentence Patterns ·
+Q&A Pattern Book & IELTS room).
 
 - **WriteRight ✎** — listen & write dictation: words, sentences, meanings (hear the
   meaning → write the word), pronunciation clinic (stress + common-mistake notes),
@@ -15,6 +16,12 @@ Speaking + dictation practice apps, built from my own English books
   example script), **AI check** (speak — the app shows which words you missed),
   beginner mode ("show what to say"), and a grammar quiz — all with spaced
   review and streaks.
+- **QA Flip ⇄** — question → answer pattern cards from the Q&A Pattern Book:
+  the front shows a **question pattern** (frame + real example questions, tap
+  🔊 to hear them); flip for the **answer pattern** with full example answers,
+  tips and "don't say" warnings. IELTS cards carry the examiner/Me exchanges
+  and full model talks. Decks A1–C2 · ESL interviews · IELTS Part 1 / cue
+  cards / Part 3, plus a tricky-star deck. Streak + progress sync into the Hub.
 
 No server, no build step — plain HTML/CSS/JS. Progress and themes are saved in
 your browser. Installable (PWA) and works offline.

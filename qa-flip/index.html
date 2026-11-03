@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>QA Flip ⇄ — question &amp; answer pattern cards</title>
+<meta name="description" content="Flip cards from the Q&A Pattern Book: see the question and its pattern, flip for the answer pattern and full examples. A1–C2, interviews and IELTS.">
+<meta name="theme-color" content="#FCEAE3">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='28' height='28' rx='8' fill='%23E2562E'/%3E%3Cpath d='M9 20l7-11 7 11' fill='none' stroke='%23fff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3C%3Cpath d='M9 26h14' stroke='%23fff' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+
+<!-- ══════════════════ HOME ══════════════════ -->
+<section id="screen-home" class="screen">
+  <header class="top">
+    <div class="brand">QA Flip <span class="flip-glyph" aria-hidden="true">⇄</span></div>
+    <div class="top-right">
+      <a class="icon-btn" href="../index.html" title="English Hub" aria-label="Back to the English Hub" style="text-decoration:none">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 3l9 8h-3v9h-5v-6h-2v6H6v-9H3z"/></svg>
+      </a>
+      <button id="btn-streak" class="chip" title="Your practice streak">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 2c1 4-3 5-3 9a3 3 0 0 0 6 .4C15 13 17 14 17 16.5A5 5 0 0 1 7 17c0-4 3-5.5 4-9 .4 1.4 2 2 2 3.5C14 9 13 5 12 2z"/></svg>
+        <b id="streak-n">0</b><span class="chip-sub">day streak</span>
+      </button>
+      <button id="btn-theme" class="icon-btn" title="Light / dark theme" aria-label="Toggle light or dark theme">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="hero">
+    <p class="hero-kicker">⇄ question → answer practice</p>
+    <h1>See the question.<br><span class="accent">Flip</span> for the answer.</h1>
+    <p class="hero-sub">Every card shows a <b>question pattern</b> with real questions — flip it for the <b class="accent">answer pattern</b> and example answers. Built from your Q&amp;A Pattern Book.</p>
+  </div>
+
+  <div class="shelf-head">
+    <div>
+      <div class="shelf-label">Your decks</div>
+      <p class="shelf-sub">A1 – C2 · ESL interviews · IELTS speaking</p>
+    </div>
+    <div class="shelf-total" id="foot-total">—</div>
+  </div>
+
+  <div class="shelf" id="shelf"></div>
+
+  <div id="tricky-quick" class="tricky-quick" hidden>
+    <button id="btn-tricky-deck" class="ghost-cta">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 3l2.7 5.6 6.3.8-4.6 4.3 1.2 6.2L12 17l-5.6 2.9 1.2-6.2L3 9.4l6.3-.8z"/></svg>
+      <span id="tricky-text"><b id="tricky-n">0</b> tricky cards waiting</span>
+      <span class="ghost-cta-arrow" aria-hidden="true">→</span>
+    </button>
+  </div>
+
+  <div class="how" aria-label="How it works">
+    <div class="how-step">
+      <span class="how-n">1</span>
+      <b>Read the question</b>
+      <small>Pattern frame + real questions.</small>
+    </div>
+    <div class="how-step">
+      <span class="how-n">2</span>
+      <b>Answer out loud</b>
+      <small>Try it yourself first — always.</small>
+    </div>
+    <div class="how-step">
+      <span class="how-n">3</span>
+      <b>Flip &amp; compare</b>
+      <small>Answer pattern + examples. Steal phrases.</small>
+    </div>
+  </div>
+
+  <p class="home-note"><span aria-hidden="true">⇄</span> Everything stays on this device — no account, no tracking.</p>
+  <footer class="foot"><span>Flip until it's automatic</span></footer>
+</section>
+
+<!-- ══════════════════ DECK ══════════════════ -->
+<section id="screen-deck" class="screen screen-deck" hidden>
+  <header class="deck-top">
+    <button id="btn-deck-back" class="icon-btn" title="Back to decks (Esc)" aria-label="Back to decks">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="deck-top-text">
+      <span class="deck-crumb">All decks</span>
+      <b id="deck-top-title">Deck</b>
+    </div>
+    <div class="deck-top-actions">
+      <button id="btn-shuffle" class="icon-btn" title="Shuffle deck">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M17 4h5v5M22 4l-6.5 6.5M7 20H2v-5M2 20l6.5-6.5M17 20h5v-5M22 20L2 4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button id="btn-reset" class="icon-btn" title="Reset this deck's progress">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 10a8 8 0 1 1 2 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M4 4v6h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="deck-progress">
+    <div class="dp-track"><i id="dp-fill"></i></div>
+    <span class="dp-label"><b id="dp-done">0</b>/<span id="dp-total">0</span></span>
+  </div>
+
+  <div class="flip-zone">
+    <div id="flipcard" class="flipcard" tabindex="0" role="button" aria-label="Flip card">
+      <div class="fc-inner">
+        <!-- FRONT : the question -->
+        <div class="fc-face fc-front">
+          <div class="fc-head">
+            <span id="fc-level" class="lvl-pill">A1</span>
+            <span id="fc-topic" class="fc-topic">Topic</span>
+          </div>
+          <div class="fc-scroll">
+            <div class="p-name q-name" id="fc-qname">Pattern</div>
+            <div class="frame-box q-frame"><span class="frame-lab">question pattern</span><span id="fc-qframe"></span></div>
+            <div id="fc-qex" class="ex-list"></div>
+            <div id="fc-qtip" class="mini-tip" hidden></div>
+          </div>
+          <div class="fc-hint">tap the card to flip ⇄</div>
+        </div>
+        <!-- BACK : the answer -->
+        <div class="fc-face fc-back">
+          <div class="fc-head">
+            <span class="lvl-pill back-pill">ANSWER</span>
+            <span class="fc-topic" id="fc-topic2">Topic</span>
+          </div>
+          <div class="fc-scroll">
+            <div class="p-name a-name" id="fc-aname">Pattern</div>
+            <div class="frame-box a-frame"><span class="frame-lab">answer pattern</span><span id="fc-aframe"></span></div>
+            <div id="fc-aex" class="ex-list"></div>
+            <button id="btn-next-ex" class="cycle-btn" hidden>next example ▸</button>
+            <div id="fc-atip" class="mini-tip" hidden></div>
+            <div id="fc-adont" class="dont-box" hidden><b>✗ Don't say</b> <span id="fc-adont-txt"></span></div>
+            <details id="fc-exch" class="exch" hidden>
+              <summary><span id="fc-exch-lab">Hear it in conversation</span><span class="chev">▾</span></summary>
+              <div id="fc-exch-body"></div>
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="btn-tricky" class="ctl ctl-tricky" title="Mark as tricky (T)">
+      <span aria-hidden="true">★</span> Tricky
+    </button>
+    <button id="btn-got" class="ctl ctl-got" title="Got it (G)">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 13l5 5L20 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Got it
+    </button>
+    <button id="btn-skip" class="ctl ctl-skip" title="Skip (→)">
+      Skip <span aria-hidden="true">→</span>
+    </button>
+  </div>
+  <p class="kbd-hint">space = flip · G = got it · T = tricky · S = speak</p>
+</section>
+
+<!-- ══════════════════ DONE ══════════════════ -->
+<section id="screen-done" class="screen screen-done" hidden>
+  <header class="top">
+    <div class="brand">QA Flip <span class="flip-glyph" aria-hidden="true">⇄</span></div>
+    <a class="icon-btn" href="../index.html" title="English Hub" aria-label="Back to the English Hub" style="text-decoration:none">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 3l9 8h-3v9h-5v-6h-2v6H6v-9H3z"/></svg>
+    </a>
+  </header>
+  <div class="done-card">
+    <div class="done-emoji" aria-hidden="true">✿</div>
+    <h2>Deck complete!</h2>
+    <p class="done-sub" id="done-sub">You reviewed every card.</p>
+    <div class="done-tiles">
+      <div class="done-tile"><b id="done-got">0</b><span>got it</span></div>
+      <div class="done-tile"><b id="done-tricky">0</b><span>tricky ★</span></div>
+      <div class="done-tile"><b id="done-skipped">0</b><span>skipped</span></div>
+    </div>
+    <div class="done-actions">
+      <button id="btn-again" class="big-cta">Practice again</button>
+      <button id="btn-done-back" class="ghost-cta2">Back to decks</button>
+    </div>
+  </div>
+</section>
+
+<script src="data.js"></script>
+<script src="app.js?v=1"></script>
+</body>
+</html>

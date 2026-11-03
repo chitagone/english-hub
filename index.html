@@ -129,6 +129,7 @@ body {
 
 .app-card.se { --ac: var(--teal); --acs: var(--teal-soft); }
 .app-card.wr { --ac: var(--violet); --acs: var(--violet-soft); }
+.app-card.qf { --ac: var(--coral); --acs: var(--coral-soft); }
 
 .app-ico {
   width: 52px; height: 52px;
@@ -229,9 +230,9 @@ body {
   </header>
 
   <div class="hero">
-    <p class="kicker">one home · two apps</p>
+    <p class="kicker">one home · three apps</p>
     <h1><span class="speak">Speak</span> it.<br><span class="write">Write</span> it. Own it.</h1>
-    <p>Both practice apps built from <b>your own books</b> — Master Vocab, the Conversation Pattern Books and Grammar. Pick how you want to train today.</p>
+    <p>All three practice apps built from <b>your own books</b> — Master Vocab, the Conversation Pattern Books, Grammar, the Q&amp;A Pattern Book and IELTS room. Pick how you want to train today.</p>
   </div>
 
   <div class="apps">
@@ -267,6 +268,22 @@ body {
         <li>Type it or write in your book · Apple Pencil</li>
       </ul>
       <span class="app-go">Start dictation →</span>
+    </a>
+
+    <a class="app-card qf" href="qa-flip/index.html">
+      <div class="app-ico">⇄</div>
+      <div class="app-name">QA Flip</div>
+      <div class="app-tag">Question ⇄ answer pattern cards</div>
+      <div class="app-stats">
+        <span class="st">⇄ <b id="qf-total">0</b><small>cards flipped</small></span>
+        <span class="st" id="qf-tricky-wrap" hidden>⭐ <b id="qf-tricky">0</b><small>tricky</small></span>
+      </div>
+      <ul class="app-feats">
+        <li>Front: question pattern + real questions</li>
+        <li>Flip: answer pattern + full examples</li>
+        <li>A1–C2 · ESL interviews · IELTS speaking</li>
+      </ul>
+      <span class="app-go">Start flipping →</span>
     </a>
   </div>
 
@@ -361,6 +378,14 @@ body {
     $('#wr-tricky-wrap').hidden = !n;
     $('#wr-tricky').textContent = n;
   } catch { /* storage unavailable */ }
+
+  try {
+    const qf = jparse(localStorage.getItem('qaflip-v1'), {});
+    $('#qf-total').textContent = Number(qf.total || 0).toLocaleString();
+    const qt = (qf.tricky || []).length;
+    $('#qf-tricky-wrap').hidden = !qt;
+    $('#qf-tricky').textContent = qt;
+  } catch { /* storage unavailable */ }
 })();
 </script>
 <script>
@@ -376,14 +401,16 @@ body {
   const wrDays = jparse(localStorage.getItem('writeRight.days.v1'), []);
   const se = jparse(localStorage.getItem('speakeasy-v1'), {});
   const seDays = Array.isArray(se.days) ? se.days : [];
+  const qf = jparse(localStorage.getItem('qaflip-v1'), {});
+  const qfDays = Array.isArray(qf.days) ? qf.days : [];
 
-  const total = (stats.total || 0) + (Number(se.total) || 0);
+  const total = (stats.total || 0) + (Number(se.total) || 0) + (Number(qf.total) || 0);
   if (!total) return;                       // nothing practised yet — hide panel
 
   const acc = stats.total ? Math.round(((stats.right || 0) / stats.total) * 100) + '%' : '—';
   const review = Object.keys(srs).length + Object.keys(se.srs || {}).length;
 
-  const daySet = new Set([...(Array.isArray(wrDays) ? wrDays : []), ...seDays]);
+  const daySet = new Set([...(Array.isArray(wrDays) ? wrDays : []), ...seDays, ...qfDays]);
   const iso = (d) => d.toISOString().slice(0, 10);
   let streak = 0;
   const cur = new Date();

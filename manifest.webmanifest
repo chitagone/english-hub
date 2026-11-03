@@ -1,7 +1,7 @@
 {
   "name": "English Hub — speaking & dictation practice",
   "short_name": "English Hub",
-  "description": "SpeakEasy speaking practice and WriteRight dictation, built from your own English books.",
+  "description": "SpeakEasy speaking practice, WriteRight dictation and QA Flip pattern cards, built from your own English books.",
   "start_url": "index.html",
   "scope": ".",
   "display": "standalone",

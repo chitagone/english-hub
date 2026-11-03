@@ -297,6 +297,7 @@ button:focus-visible, input:focus-visible, kbd:focus-visible {
   background: var(--violet-soft);
 }
 .opt-card[aria-pressed="true"] .ic { color: var(--violet); }
+.opt-card:disabled { opacity: .35; pointer-events: none; }
 
 .row-opts {
   display: flex; flex-wrap: wrap; gap: 12px 26px;

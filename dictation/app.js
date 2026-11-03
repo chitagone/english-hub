@@ -382,20 +382,36 @@ function updateModeUI() {
   updateArticleUI();
 }
 
+/* sentence-only decks (CONV / PHRASES): no word data, so word modes don't apply */
+function syncModeForDeck() {
+  const sentOnly = !D.words[S.level];
+  ['#mode-word', '#mode-meaning', '#mode-pron'].forEach((sel) => { $(sel).disabled = sentOnly; });
+  if (sentOnly && S.mode !== 'sentence' && S.mode !== 'article') {
+    S.mode = 'sentence';
+    const all = { '#mode-word': 'word', '#mode-sentence': 'sentence', '#mode-meaning': 'meaning', '#mode-pron': 'pron', '#mode-article': 'article' };
+    Object.entries(all).forEach(([sel, val]) => $(sel).setAttribute('aria-pressed', val === 'sentence'));
+    updateModeUI();
+  }
+}
+
 function renderHome() {
   // decks
   const counts = D.meta.counts;
-  const order = ['A1', 'A2', 'B1', 'B2', 'C1', 'EXTRA'];
+  const order = ['A1', 'A2', 'B1', 'B2', 'C1', 'EXTRA', 'CONV', 'PHRASES'].filter((k) => counts[k]);
   $('#decks').innerHTML = order
     .map((k) => {
       const c = counts[k];
+      const meta = c.words
+        ? `<b>${c.words}</b> words<br><b>${c.sentences}</b> sentences`
+        : `<b>${c.sentences.toLocaleString()}</b> sentences`;
       return `<button class="deck" data-lvl="${k}" aria-pressed="${k === S.level}">
         <div class="dk-lvl">${k}</div>
         <div class="dk-name">${esc(c.name)}</div>
-        <div class="dk-meta"><b>${c.words}</b> words<br><b>${c.sentences}</b> sentences</div>
+        <div class="dk-meta">${meta}</div>
       </button>`;
     })
     .join('');
+  syncModeForDeck();
 
   renderLetters();
   const ai = $('#article-in');
@@ -428,6 +444,7 @@ function bindHome() {
     if (!b) return;
     S.level = b.dataset.lvl;
     document.querySelectorAll('.deck').forEach((d) => d.setAttribute('aria-pressed', d === b));
+    syncModeForDeck();
     renderLetters();
   });
 
@@ -812,7 +829,7 @@ function reveal(diffData, selfAssess) {
   }
   const glossAll = it.m === 'meaning' ? glossesOf(it).join(' · ') : it.g;
   $('#reveal-gloss').innerHTML = (glossAll && it.m !== 'pron')   // pron = sound focus, no meaning
-    ? `<b>${it.m === 'sentence' ? esc(it.w) + ' — ' : ''}${esc(glossAll)}</b>`
+    ? `<b>${it.m === 'sentence' && it.w ? esc(it.w) + ' — ' : ''}${esc(glossAll)}</b>`
     : '';
 
   // word & meaning modes: a different example sentence each time this word appears

@@ -6,6 +6,21 @@
   'use strict';
 
   const D = window.QA_DATA;
+
+  /* friendly message if the data file didn't load (stale cache / offline first run) */
+  if (!D || !D.cards || !D.cards.length) {
+    document.querySelectorAll('.screen').forEach((el) => { el.hidden = true; });
+    const el = document.createElement('section');
+    el.className = 'screen';
+    el.innerHTML = '<div class="hero" style="text-align:center;padding-top:18vh">' +
+      '<div style="font-size:44px">⇄</div>' +
+      '<h1 style="font-family:var(--disp);font-weight:800;font-size:26px;margin:14px 0 8px">Cards didn\'t load</h1>' +
+      '<p style="color:var(--mut);font-weight:600;max-width:38ch;margin:0 auto">Your browser is holding an old cached copy. ' +
+      '<b>Refresh the page once or twice</b> — the new version will take over automatically.</p></div>';
+    document.body.appendChild(el);
+    return;
+  }
+
   const $ = (s) => document.querySelector(s);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 

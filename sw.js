@@ -1,6 +1,6 @@
 /* English Hub service worker — offline app shell.
    Bump CACHE_VERSION whenever app files change to force a refresh. */
-const CACHE_VERSION = "hub-v4";
+const CACHE_VERSION = "hub-v5";
 const APP_SHELL = [
   "./",
   "index.html",
@@ -16,8 +16,8 @@ const APP_SHELL = [
   "speaking-practice/data.js",
   "speaking-practice/quiz-data.js?v=5",
   "qa-flip/index.html",
-  "qa-flip/style.css?v=1",
-  "qa-flip/app.js?v=1",
+  "qa-flip/style.css?v=2",
+  "qa-flip/app.js?v=2",
   "qa-flip/data.js",
 ];
 
@@ -52,7 +52,11 @@ self.addEventListener("fetch", (e) => {
           caches.open(CACHE_VERSION).then((c) => c.put(req, copy));
         }
         return res;
-      }).catch(() => caches.match("./index.html"));
+      }).catch(() => {
+        /* offline fallback ONLY for page navigations — never feed HTML to CSS/JS requests */
+        if (req.mode === "navigate") return caches.match("./index.html");
+        return new Response("", { status: 504, statusText: "Offline" });
+      });
     })
   );
 });

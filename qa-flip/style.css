@@ -348,6 +348,55 @@ body {
 .kbd-hint { margin-top: 12px; text-align: center; color: var(--mut); font-weight: 600; font-size: 11.5px; }
 @media (hover: none) { .kbd-hint { display: none; } }
 
+/* ── topic picker ─────────────────────────── */
+.picker-sub { color: var(--mut); font-weight: 600; font-size: 13.5px; margin: 16px 0 12px; }
+.picker-sub b { color: var(--ink); }
+.picker-tools {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 11px;
+}
+.picker-tools-info { color: var(--mut); font-weight: 700; font-size: 13px; }
+.pill-btn {
+  border: 1.5px solid color-mix(in srgb, var(--coral) 45%, var(--line));
+  background: var(--card); color: var(--coral);
+  font-family: var(--disp); font-weight: 700; font-size: 13.5px;
+  padding: 7px 15px; border-radius: 999px; cursor: pointer;
+}
+.pill-btn:active { transform: scale(.95); }
+.topic-list { display: flex; flex-direction: column; gap: 8px; }
+.topic-row {
+  position: relative;
+  display: flex; align-items: center; gap: 11px;
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  padding: 11px 14px;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.topic-row.on { border-color: color-mix(in srgb, var(--coral) 55%, var(--line)); }
+.topic-row input { position: absolute; opacity: 0; pointer-events: none; }
+.tr-check {
+  width: 22px; height: 22px; flex: 0 0 auto;
+  border: 2px solid var(--line); border-radius: 7px;
+  background: var(--bg-deep);
+  display: grid; place-items: center;
+  font-size: 13px; font-weight: 800; color: #fff;
+}
+.tr-check::after { content: '✓'; opacity: 0; }
+.topic-row.on .tr-check { background: var(--coral); border-color: var(--coral); }
+.topic-row.on .tr-check::after { opacity: 1; }
+.tr-name { flex: 1; font-weight: 700; font-size: 14.5px; }
+.topic-row:not(.on) .tr-name { color: var(--mut); }
+.tr-count { color: var(--mut); font-weight: 700; font-size: 12px; flex: 0 0 auto; }
+.picker-start-wrap {
+  position: sticky; bottom: 0;
+  margin-top: 14px; padding: 10px 0 2px;
+  background: linear-gradient(transparent, var(--bg) 32%);
+}
+#btn-start-session { width: 100%; }
+#btn-start-session:disabled { opacity: .45; cursor: not-allowed; }
+
 /* ── done screen ──────────────────────────── */
 .screen-done { justify-content: center; }
 .done-card {

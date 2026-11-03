@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 
@@ -77,6 +77,33 @@
 
   <p class="home-note"><span aria-hidden="true">⇄</span> Everything stays on this device — no account, no tracking.</p>
   <footer class="foot"><span>Flip until it's automatic</span></footer>
+</section>
+
+<!-- ══════════════════ TOPIC PICKER ══════════════════ -->
+<section id="screen-picker" class="screen screen-picker" hidden>
+  <header class="deck-top">
+    <button id="btn-picker-back" class="icon-btn" title="Back to decks (Esc)" aria-label="Back to decks">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="deck-top-text">
+      <span class="deck-crumb">All decks</span>
+      <b id="picker-title">Deck</b>
+    </div>
+    <div class="deck-top-actions"></div>
+  </header>
+
+  <p class="picker-sub">Choose the topics to practise — <b>all are selected by default.</b> Uncheck the ones you want to skip.</p>
+
+  <div class="picker-tools">
+    <span class="picker-tools-info" id="picker-selected-info">14 of 14 topics</span>
+    <button id="btn-check-all" class="pill-btn" type="button">Uncheck all</button>
+  </div>
+
+  <div class="topic-list" id="topic-list"></div>
+
+  <div class="picker-start-wrap">
+    <button id="btn-start-session" class="big-cta" type="button">Start practice · <span id="picker-count">0</span> cards</button>
+  </div>
 </section>
 
 <!-- ══════════════════ DECK ══════════════════ -->
@@ -184,6 +211,6 @@
 </section>
 
 <script src="data.js"></script>
-<script src="app.js?v=3"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 /* English Hub service worker — offline app shell.
    Bump CACHE_VERSION whenever app files change to force a refresh. */
-const CACHE_VERSION = "hub-v6";
+const CACHE_VERSION = "hub-v7";
 const APP_SHELL = [
   "./",
   "index.html",
@@ -16,8 +16,8 @@ const APP_SHELL = [
   "speaking-practice/data.js",
   "speaking-practice/quiz-data.js?v=5",
   "qa-flip/index.html",
-  "qa-flip/style.css?v=3",
-  "qa-flip/app.js?v=3",
+  "qa-flip/style.css?v=4",
+  "qa-flip/app.js?v=4",
   "qa-flip/data.js",
 ];
 

@@ -1,7 +1,7 @@
 /* QA Flip ⇄ — question & answer pattern cards.
-   Front: question pattern + example questions.
-   Back:  answer pattern + example answers (+ tips + the live exchange).
-   Progress + streak in localStorage (qaflip-v1); theme shared with the Hub. */
+   Home → topic picker (checkboxes, all on by default, check/uncheck all)
+   → flip session. Progress + streak in localStorage (qaflip-v1);
+   theme shared with the Hub. Deep link: index.html#deck=A1 */
 (function () {
   'use strict';
 
@@ -22,7 +22,9 @@
   }
 
   const $ = (s) => document.querySelector(s);
+  const $$ = (s) => document.querySelectorAll(s);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const escAttr = (t) => esc(t).replace(/'/g, '&#39;');
 
   const LVL_LABEL = { A1: 'A1', A2: 'A2', B1: 'B1', B2: 'B2', C1: 'C1', C2: 'C2', IV: 'Interview', I1: 'IELTS 1', I2: 'Cue Card', I3: 'IELTS 3', TRICKY: '★' };
   const LVL_CLASS = { IV: 'iv', I1: 'ielts', I2: 'ielts', I3: 'ielts' };
@@ -31,10 +33,9 @@
   const jparse = (v, d) => { try { return JSON.parse(v) ?? d; } catch { return d; } };
   const store = () => jparse(localStorage.getItem('qaflip-v1'), {});
   const save = (s) => { try { localStorage.setItem('qaflip-v1', JSON.stringify(s)); } catch {} };
-  const todayISO = () => new Date().toISOString().slice(0, 10);
   function markDay(s) {
     s.days = Array.isArray(s.days) ? s.days : [];
-    const t = todayISO();
+    const t = new Date().toISOString().slice(0, 10);
     if (!s.days.includes(t)) s.days.push(t);
     if (s.days.length > 400) s.days = s.days.slice(-400);
   }
@@ -75,7 +76,7 @@
   }
 
   /* ── screens ─────────────────────────────── */
-  const screens = { home: $('#screen-home'), deck: $('#screen-deck'), done: $('#screen-done') };
+  const screens = { home: $('#screen-home'), picker: $('#screen-picker'), deck: $('#screen-deck'), done: $('#screen-done') };
   function show(name) {
     Object.values(screens).forEach((el) => { el.hidden = true; });
     screens[name].hidden = false;
@@ -119,25 +120,94 @@
     $('#tricky-quick').hidden = !tricky.length;
     $('#tricky-n').textContent = tricky.length;
 
-    document.querySelectorAll('[data-deck]').forEach((b) =>
-      b.addEventListener('click', () => startDeck(b.dataset.deck)));
+    $$('[data-deck]').forEach((b) =>
+      b.addEventListener('click', () => openDeck(b.dataset.deck)));
   }
 
-  /* ── deck session ────────────────────────── */
-  let session = null;
+  /* ── topic picker ────────────────────────── */
+  let pending = null;
 
-  function startDeck(deckId) {
+  function openDeck(deckId) {
     let cards, title;
     if (deckId === 'TRICKY') {
       const tricky = store().tricky || [];
       cards = D.cards.filter((c) => tricky.includes(c.id));
       title = 'Tricky ★ review';
-    } else {
-      cards = D.cards.filter((c) => c.deck === deckId);
-      const meta = D.decks.find((d) => d.id === deckId);
-      title = meta ? meta.name : deckId;
+      if (!cards.length) return;
+      launchSession(deckId, title, cards);      // tricky deck is already a selection
+      return;
     }
+    cards = D.cards.filter((c) => c.deck === deckId);
     if (!cards.length) return;
+    const meta = D.decks.find((d) => d.id === deckId);
+    title = meta ? meta.name : deckId;
+    openPicker(deckId, title, cards);
+  }
+
+  function openPicker(deckId, title, cards) {
+    const seen = {};
+    const topics = [];
+    cards.forEach((c) => {
+      if (!(c.topic in seen)) { seen[c.topic] = { name: c.topic, count: 0 }; topics.push(seen[c.topic]); }
+      seen[c.topic].count++;
+    });
+    pending = { deckId, title, cards, topics, selected: new Set(topics.map((t) => t.name)) };
+    $('#picker-title').textContent = title;
+    renderTopicList();
+    show('picker');
+  }
+
+  function renderTopicList() {
+    $('#topic-list').innerHTML = pending.topics.map((t) => {
+      const on = pending.selected.has(t.name);
+      return `<label class="topic-row ${on ? 'on' : ''}">
+        <input type="checkbox" data-topic="${escAttr(t.name)}" ${on ? 'checked' : ''}>
+        <span class="tr-check" aria-hidden="true"></span>
+        <span class="tr-name">${esc(t.name)}</span>
+        <span class="tr-count">${t.count} ${t.count === 1 ? 'card' : 'cards'}</span>
+      </label>`;
+    }).join('');
+    $$('#topic-list input[type=checkbox]').forEach((cb) => {
+      cb.addEventListener('change', () => {
+        cb.closest('.topic-row').classList.toggle('on', cb.checked);
+        if (cb.checked) pending.selected.add(cb.dataset.topic);
+        else pending.selected.delete(cb.dataset.topic);
+        updatePickerBar();
+      });
+    });
+    updatePickerBar();
+  }
+
+  function updatePickerBar() {
+    const n = pending.cards.filter((c) => pending.selected.has(c.topic)).length;
+    $('#picker-count').textContent = n;
+    $('#btn-start-session').disabled = n === 0;
+    const allOn = pending.selected.size === pending.topics.length;
+    $('#btn-check-all').textContent = allOn ? 'Uncheck all' : 'Check all';
+    $('#picker-selected-info').textContent =
+      `${pending.selected.size} of ${pending.topics.length} topics`;
+  }
+
+  $('#btn-check-all').addEventListener('click', () => {
+    const allOn = pending && pending.selected.size === pending.topics.length;
+    if (!pending) return;
+    pending.selected = allOn ? new Set() : new Set(pending.topics.map((t) => t.name));
+    renderTopicList();
+  });
+
+  $('#btn-start-session').addEventListener('click', () => {
+    if (!pending) return;
+    const cards = pending.cards.filter((c) => pending.selected.has(c.topic));
+    if (!cards.length) return;
+    launchSession(pending.deckId, pending.title, cards);
+  });
+
+  $('#btn-picker-back').addEventListener('click', goHome);
+
+  /* ── deck session ────────────────────────── */
+  let session = null;
+
+  function launchSession(deckId, title, cards) {
     session = { deckId, title, cards: cards.slice(), i: 0, got: 0, tricky: 0, skipped: 0, flipped: false };
     $('#deck-top-title').textContent = title;
     show('deck');
@@ -192,7 +262,7 @@
     }
     renderExch(c);
 
-    document.querySelectorAll('.speak-btn').forEach((b) =>
+    $$('.speak-btn').forEach((b) =>
       b.addEventListener('click', (e) => { e.stopPropagation(); speak(b.dataset.say); }));
     const cyc = $('#btn-next-ex');
     if (cyc) cyc.onclick = (e) => { e.stopPropagation(); exIdx++; renderAEx(c.a); };
@@ -231,7 +301,6 @@
     return esc(t).replace(/\[([^\]]+)\]/g, '<b style="color:var(--coral)">[$1]</b>')
                  .replace(/\+/g, '<b style="color:var(--coral)"> + </b>');
   }
-  const escAttr = (t) => esc(t).replace(/'/g, '&#39;');
 
   /* ── actions ─────────────────────────────── */
   function next() {
@@ -281,11 +350,12 @@
     ids.forEach((id) => delete s.done[id]);
     if (session.deckId !== 'TRICKY') s.tricky = (s.tricky || []).filter((id) => !ids.includes(id));
     save(s);
-    session.cards.forEach((c) => { /* recount session */ });
     session.i = 0; session.got = session.tricky = session.skipped = 0;
     renderCard();
     renderHome();
   }
+
+  function goHome() { renderHome(); show('home'); }
 
   /* ── wiring ──────────────────────────────── */
   $('#flipcard').addEventListener('click', () => {
@@ -297,12 +367,13 @@
   $('#btn-skip').addEventListener('click', skip);
   $('#btn-shuffle').addEventListener('click', shuffleQueue);
   $('#btn-reset').addEventListener('click', resetDeck);
-  $('#btn-deck-back').addEventListener('click', () => { renderHome(); show('home'); });
-  $('#btn-done-back').addEventListener('click', () => { renderHome(); show('home'); });
-  $('#btn-again').addEventListener('click', () => startDeck(session.deckId));
-  $('#btn-tricky-deck').addEventListener('click', () => startDeck('TRICKY'));
+  $('#btn-deck-back').addEventListener('click', () => { openDeck(session.deckId); });
+  $('#btn-done-back').addEventListener('click', goHome);
+  $('#btn-again').addEventListener('click', () => { openDeck(session.deckId); });
+  $('#btn-tricky-deck').addEventListener('click', () => openDeck('TRICKY'));
 
   document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !screens.picker.hidden) { goHome(); return; }
     if (screens.deck.hidden || e.target.tagName === 'INPUT') return;
     if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); $('#flipcard').click(); }
     else if (e.code === 'ArrowRight') skip();
@@ -311,8 +382,11 @@
     else if (e.key.toLowerCase() === 's') {
       const c = session.cards[session.i];
       speak((session.flipped ? (c.a && c.a.ex[0]) : c.q.ex[0]) || c.q.frame);
-    } else if (e.code === 'Escape') { renderHome(); show('home'); }
+    } else if (e.code === 'Escape') { goHome(); }
   });
 
+  /* deep link: index.html#deck=A1 */
+  const m = location.hash.match(/^#deck=([A-Za-z0-9]+)/);
   renderHome();
+  if (m && D.decks.some((d) => d.id === m[1].toUpperCase())) openDeck(m[1].toUpperCase());
 })();

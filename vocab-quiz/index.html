@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 
@@ -142,6 +142,7 @@
       <div class="q-mean-lab">it means…</div>
       <div class="q-meaning" id="qm-text">meaning</div>
       <div class="q-pos" id="qm-pos">noun</div>
+      <button id="btn-other" class="pill other-mean" hidden>↻ other meaning</button>
     </div>
     <div class="q-prompt" id="q-listen" hidden>
       <button id="btn-play" class="play-big" title="Play (Space)" aria-label="Play the word">
@@ -199,7 +200,8 @@
       </button>
     </div>
     <div class="rv-gloss" id="rv-gloss">meaning</div>
-    <div class="rv-gloss more" id="rv-gloss-more" hidden></div>
+    <div class="rv-def" id="rv-def" hidden></div>
+    <button id="btn-mean" class="pill mean-cycle" hidden>↻ another meaning</button>
     <button class="rv-ex" id="rv-ex" hidden title="Play this example" aria-label="Play the example sentence">
       <span class="ex-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
       <span id="rv-ex-text"></span>
@@ -263,7 +265,7 @@
   </div>
 </div>
 
-<script src="data.js?v=1"></script>
-<script src="app.js?v=3"></script>
+<script src="data.js?v=2"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>

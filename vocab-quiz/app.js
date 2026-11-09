@@ -181,6 +181,12 @@ function clozeFor(w) {
 /* ── question builders ─────────────────────────────────────── */
 
 const rnd = (n) => Math.floor(Math.random() * n);
+
+/* all meanings of a word: full list from the books, or a 1-item fallback */
+function meaningsOf(w) {
+  if (w.ms && w.ms.length) return w.ms;
+  return [{ g: w.g || '', d: '', e: [] }];
+}
 function pickDistractors(pool, correct, keyFn, n) {
   const out = [];
   const seen = new Set([String(keyFn(correct)).toLowerCase()]);
@@ -228,7 +234,11 @@ function buildQ(game, w, pool) {
   if (game === 'tf') {
     const isTrue = Math.random() < 0.5;
     let claim = w.g;
-    if (!isTrue) {
+    if (isTrue) {
+      // a TRUE claim can be any of the word's meanings
+      const ms = meaningsOf(w);
+      claim = ms[rnd(ms.length)].g || w.g;
+    } else {
       const other = pickDistractors(pool, w, (x) => x.g, 1)[0];
       if (!other) return buildQ('wm', w, pool);   // fallback
       claim = other.g;
@@ -486,9 +496,12 @@ function loadCard() {
     $('#qw-pos').hidden = !w.p;
   } else if (game === 'mw') {
     $('#q-meaning').hidden = false;
-    $('#qm-text').textContent = w.g;
+    const ms = meaningsOf(w);
+    S.q.meanIdx = 0;
+    $('#qm-text').textContent = ms[0].g;
     $('#qm-pos').textContent = w.p || '';
     $('#qm-pos').hidden = !w.p;
+    $('#btn-other').hidden = ms.length < 2;
   } else if (game === 'listen') {
     $('#q-listen').hidden = false;
     setTimeout(() => speak(w.t), 250);
@@ -599,19 +612,30 @@ function showReveal(ok) {
   v.className = 'verdict ' + (ok ? 'ok' : 'no');
   $('#rv-word').textContent = w.t;
   $('#rv-ipa').textContent = `${w.i || ''}${w.i && w.p ? ' · ' : ''}${w.p || ''}`;
-  $('#rv-gloss').textContent = w.g || '';
-  const more = (w.gs || []).filter((g) => g && g !== w.g);
-  $('#rv-gloss-more').hidden = !more.length;
-  $('#rv-gloss-more').textContent = more.length ? 'also: ' + more.slice(0, 3).join(' · ') : '';
 
-  const ex = (w.ex || [])[0];
+  // meanings carousel: cycle through every meaning (gloss + definition + example)
+  const ms = meaningsOf(w);
+  let mi = 0;
   const exBtn = $('#rv-ex');
-  if (ex) {
-    const hl = esc(ex).replace(new RegExp(`\\b(${reEsc(esc(w.t))})\\b`, 'i'), '<em>$1</em>');
-    exBtn.hidden = false;
-    $('#rv-ex-text').innerHTML = hl;
-    exBtn.onclick = () => speak(ex);
-  } else exBtn.hidden = true;
+  const renderMean = () => {
+    const m = ms[mi];
+    $('#rv-gloss').textContent = `${mi + 1}. ${m.g}`;
+    $('#rv-def').hidden = !m.d;
+    $('#rv-def').textContent = m.d || '';
+    const ex = (m.e && m.e[0]) || (w.ex || [])[0];
+    if (ex) {
+      const hl = esc(ex).replace(new RegExp(`\\b(${reEsc(esc(w.t))})\\b`, 'i'), '<em>$1</em>');
+      exBtn.hidden = false;
+      $('#rv-ex-text').innerHTML = hl;
+      exBtn.onclick = () => speak(ex);
+    } else {
+      exBtn.hidden = true;
+    }
+    $('#btn-mean').hidden = ms.length < 2;
+    $('#btn-mean').textContent = `↻ another meaning  ·  ${mi + 1}/${ms.length}`;
+  };
+  renderMean();
+  $('#btn-mean').onclick = () => { mi = (mi + 1) % ms.length; renderMean(); };
 
   const syn = w.syn || [];
   $('#rv-syn').hidden = !syn.length;
@@ -700,6 +724,14 @@ function bindPractice() {
     if (e.key === 'Enter') { e.preventDefault(); checkScramble(); }
   });
   $('#scr-in').addEventListener('input', syncTiles);
+  $('#btn-other').addEventListener('click', () => {
+    if (!S.q || S.answered) return;
+    const ms = meaningsOf(S.queue[S.i]);
+    if (ms.length < 2) return;
+    S.q.meanIdx = ((S.q.meanIdx ?? 0) + 1) % ms.length;
+    $('#qm-text').textContent = ms[S.q.meanIdx].g;
+    $('#btn-other').textContent = `↻ other meaning  ·  ${S.q.meanIdx + 1}/${ms.length}`;
+  });
   $('#scr-tiles').addEventListener('click', (e) => {
     if (S.answered) return;
     const t = e.target.closest('.scr-tile');

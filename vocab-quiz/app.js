@@ -546,6 +546,8 @@ function loadCard() {
     $('#scr-in').style.borderColor = '';
     $('#btn-scr-check').disabled = false;
     $('#btn-scr-hint').disabled = false;
+    $('#scr-hint-line').hidden = true;
+    S.q.hints = 0;
     setTimeout(() => $('#scr-in').focus(), 100);
   } else if (game === 'tf') {
     $('#q-tf').hidden = false;
@@ -777,12 +779,23 @@ function bindPractice() {
     inp.focus();
   });
   $('#btn-scr-hint').addEventListener('click', () => {
-    const w = S.q?.w;
-    if (!w) return;
-    $('#scr-in').value = $('#scr-in').value || w.t.charAt(0);
-    syncTiles();
-    $('#scr-in').focus();
-    speak(w.t, 0.6);
+    if (S.answered || !S.q) return;
+    const w = S.q.w;
+    S.q.hints = (S.q.hints || 0) + 1;
+    // stage 1 (every tap): a visible hint — IPA + first letter
+    const parts = [];
+    if (w.i) parts.push(w.i);
+    parts.push('starts with \u201C' + w.t.charAt(0).toUpperCase() + '\u201D');
+    const line = $('#scr-hint-line');
+    line.textContent = '\uD83D\uDD0A ' + parts.join('  \u00B7  ');
+    line.hidden = false;
+    // stage 2: also drop the first letter into the answer box
+    if (S.q.hints >= 2 && !($('#scr-in').value || '').length) {
+      $('#scr-in').value = w.t.charAt(0);
+      syncTiles();
+      $('#scr-in').focus();
+    }
+    speak(w.t, 0.6);                          // and hear it slowly
   });
   $('#btn-next').addEventListener('click', nextCard);
   $('#btn-play').addEventListener('click', () => speak(S.queue[S.i].t));

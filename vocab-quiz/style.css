@@ -452,6 +452,15 @@ kbd {
 }
 .q-meaning.sm { font-size: clamp(17px, 3.4vw, 22px); color: var(--mut); font-weight: 600; font-family: var(--body); }
 .other-mean { margin-top: 12px; }
+.hint-line {
+  margin-top: 12px;
+  display: inline-block;
+  font-weight: 800; font-size: 14.5px;
+  color: var(--amber);
+  background: var(--amber-soft);
+  border-radius: 11px;
+  padding: 7px 15px;
+}
 .mean-cycle { margin-top: 10px; }
 .rv-def { margin-top: 4px; font-weight: 600; font-size: 14px; color: var(--mut); line-height: 1.4; }
 .q-cloze {

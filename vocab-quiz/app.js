@@ -169,7 +169,9 @@ function clozeFor(w) {
     for (const f of forms) {
       const re = new RegExp(`\\b(${reEsc(f)})\\b`, 'i');
       if (re.test(ex)) {
-        return { html: esc(ex).replace(new RegExp(`\\b(${reEsc(esc(f))})\\b`, 'i'), '<span class="gap">$1</span>'), raw: ex };
+        // blank it out — the word must NOT be visible in the gap
+        const html = esc(ex).replace(new RegExp(`\\b(${reEsc(esc(f))})\\b`, 'i'), '<span class="gap">______</span>');
+        return { html, raw: ex };
       }
     }
   }

@@ -458,8 +458,9 @@ kbd {
 }
 .q-cloze .gap {
   color: var(--amber);
-  border-bottom: 3px dashed var(--amber);
-  padding: 0 6px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  padding: 0 4px;
   white-space: nowrap;
 }
 

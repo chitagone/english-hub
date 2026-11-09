@@ -515,11 +515,19 @@ function loadCard() {
     $('#scr-hint').textContent = w.g || '';
     $('#scr-pos').textContent = (w.p ? w.p + ' · ' : '') + `${w.t.replace(/[^a-z]/gi, '').length} letters`;
     $('#scr-in').value = '';
+    $('#scr-in').disabled = false;            // re-enable after the previous card
+    $('#scr-in').style.borderColor = '';
+    $('#btn-scr-check').disabled = false;
+    $('#btn-scr-hint').disabled = false;
     setTimeout(() => $('#scr-in').focus(), 100);
   } else if (game === 'tf') {
     $('#q-tf').hidden = false;
     $('#tf-word').textContent = w.t;
     $('#tf-claim').textContent = S.q.claim;
+    $('#btn-true').disabled = false;          // re-enable after the previous card
+    $('#btn-false').disabled = false;
+    $('#btn-true').classList.remove('correct', 'wrong');
+    $('#btn-false').classList.remove('correct', 'wrong');
   }
 
   if (game === 'scramble') { $('#scr-answer').hidden = false; }

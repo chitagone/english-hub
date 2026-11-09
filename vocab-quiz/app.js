@@ -497,7 +497,8 @@ function loadCard() {
     $('#qc-text').innerHTML = S.q.cloze.html;
   } else if (game === 'scramble') {
     $('#q-scramble').hidden = false;
-    $('#scr-tiles').innerHTML = S.q.tiles.map((c) => `<span class="scr-tile">${c}</span>`).join('');
+    $('#scr-tiles').innerHTML = S.q.tiles
+      .map((c, i) => `<span class="scr-tile" data-idx="${i}" role="button" aria-label="letter ${c}">${c}</span>`).join('');
     $('#scr-hint').textContent = w.g || '';
     $('#scr-pos').textContent = (w.p ? w.p + ' · ' : '') + `${w.t.replace(/[^a-z]/gi, '').length} letters`;
     $('#scr-in').value = '';
@@ -674,6 +675,19 @@ function endSession() {
   $('#btn-again-missed').hidden = !m.length;
 }
 
+/* ── scramble tiles: dim letters you've already used ───────── */
+
+function syncTiles() {
+  const val = ($('#scr-in').value || '').toUpperCase().replace(/[^A-Z]/g, '');
+  const tiles = $$('#scr-tiles .scr-tile');
+  const used = new Array(tiles.length).fill(false);
+  for (const ch of val) {
+    const i = tiles.findIndex((t, k) => !used[k] && t.textContent === ch);
+    if (i !== -1) used[i] = true;             // consume one tile per typed letter
+  }
+  tiles.forEach((t, i) => t.classList.toggle('used', used[i]));
+}
+
 function bindPractice() {
   $('#choices').addEventListener('click', (e) => {
     const b = e.target.closest('.choice');
@@ -685,10 +699,21 @@ function bindPractice() {
   $('#scr-in').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); checkScramble(); }
   });
+  $('#scr-in').addEventListener('input', syncTiles);
+  $('#scr-tiles').addEventListener('click', (e) => {
+    if (S.answered) return;
+    const t = e.target.closest('.scr-tile');
+    if (!t || t.classList.contains('used')) return;
+    const inp = $('#scr-in');
+    inp.value += t.textContent;
+    syncTiles();
+    inp.focus();
+  });
   $('#btn-scr-hint').addEventListener('click', () => {
     const w = S.q?.w;
     if (!w) return;
     $('#scr-in').value = $('#scr-in').value || w.t.charAt(0);
+    syncTiles();
     $('#scr-in').focus();
     speak(w.t, 0.6);
   });

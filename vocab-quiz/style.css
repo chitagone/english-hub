@@ -493,8 +493,20 @@ kbd {
   border-radius: 12px;
   font-family: var(--disp); font-weight: 800; font-size: 22px;
   text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity .12s, transform .12s, background .12s, border-color .12s, color .12s;
 }
-.scr-tile.blank { background: transparent; border-style: dashed; border-color: var(--line); }
+.scr-tile:active { transform: scale(.93); }
+.scr-tile.used {
+  opacity: .28;
+  background: transparent;
+  border-color: var(--line);
+  color: var(--mut);
+  transform: scale(.9);
+  cursor: default;
+}
+.scr-tile.blank { background: transparent; border-style: dashed; border-color: var(--line); cursor: default; }
 .scr-answer { display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; }
 .scr-in {
   flex: 1; min-width: 200px;

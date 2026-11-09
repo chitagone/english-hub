@@ -61,6 +61,32 @@ const S = {
 let stats = load(STATS_KEY, { total: 0, right: 0, days: [], best: { speed: 0 } });
 let tricky = load(TRICKY_KEY, {});
 
+/* word -> { level -> item } index, used to refresh old stored tricky items */
+const VQ_INDEX = (() => {
+  const idx = {};
+  for (const [lvl, list] of Object.entries(VQ.words || {})) {
+    for (const w of list) {
+      (idx[w.t] = idx[w.t] || {})[lvl] = w;
+    }
+  }
+  return idx;
+})();
+
+/* tricky items saved before an update carry old data (no ms/syn/ex…) —
+   re-link them to the current entries so every feature works on them */
+function refreshTrickyItems() {
+  let changed = false;
+  for (const key of Object.keys(tricky)) {
+    const e = tricky[key];
+    const i = key.indexOf(':');
+    const byWord = VQ_INDEX[key.slice(i + 1)];
+    if (!byWord) continue;
+    const fresh = byWord[key.slice(0, i)] || Object.values(byWord)[0];
+    if (fresh && fresh !== e.item) { e.item = fresh; changed = true; }
+  }
+  if (changed) save(TRICKY_KEY, tricky);
+}
+
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
 function logDay() {
@@ -407,7 +433,8 @@ function startSession() {
 }
 
 function startTricky() {
-  // mixed games over the tricky pool
+  // mixed games over the tricky pool (items freshly linked to current data)
+  refreshTrickyItems();
   let pool = Object.values(tricky).map((e) => e.item).filter(Boolean);
   if (!pool.length) return;
   shuffleArr(pool);
@@ -859,6 +886,7 @@ bindHome();
 bindPractice();
 bindResults();
 bindVoice();
+refreshTrickyItems();
 renderHome();
 show('home');
 })();

@@ -1,9 +1,18 @@
-# English Hub ✿✎⇄
+# English Hub ✿✎⇄🎯
 
-Speaking + dictation + flip-card practice apps, built from my own English books
-(Master Vocab · Conversation Pattern Books · Grammar & Sentence Patterns ·
+Speaking + dictation + flip-card + quiz practice apps, built from my own English
+books (Master Vocab · Conversation Pattern Books · Grammar & Sentence Patterns ·
 Q&A Pattern Book & IELTS room).
 
+- **QuizWiz 🎯** — vocabulary quiz games from Master Vocab (A1–C1 + EXTRA):
+  pick your level, filter words by first letters A–Z (multi-select or ALL),
+  choose a game and play. Seven games — **word → meaning**, **meaning → word**,
+  **listen & guess** (hear the word, pick it), **missing word** (example with a
+  gap), **scramble** (unscramble the letters), **true or false**, and a
+  **60-second speed round**. Every answer shows a reveal card (word, IPA,
+  meanings, example, synonyms, 🔊) — wrong words become *tricky* and come back
+  in mixed review until you master them. Voice/speed shared with WriteRight;
+  streak and stats sync into the Hub.
 - **WriteRight ✎** — listen & write dictation: words, sentences, meanings (hear the
   meaning → write the word), pronunciation clinic (stress + common-mistake notes),
   or paste your own article. Type it (auto-check with letter diff) or write it in

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>QuizWiz 🎯 — vocabulary quiz games</title>
+<meta name="description" content="Quiz your Master Vocab: word⇄meaning choices, listen &amp; guess, missing-word examples, scramble, true/false and a 60-second speed round. Pick your level and letters A–Z.">
+<meta name="theme-color" content="#F6EFDF">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='28' height='28' rx='8' fill='%238A5D0C'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%23fff' stroke-width='2.4'/%3E%3Ccircle cx='16' cy='16' r='3.4' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+
+<!-- ══════════════════ HOME ══════════════════ -->
+<section id="screen-home" class="screen">
+  <header class="top">
+    <div class="brand">QuizWiz <span class="target" aria-hidden="true">🎯</span></div>
+    <div class="top-right">
+      <a class="icon-btn" href="../index.html" title="English Hub" aria-label="Back to the English Hub" style="text-decoration:none">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 3l9 8h-3v9h-5v-6h-2v6H6v-9H3z"/></svg>
+      </a>
+      <button id="btn-stats" class="chip" title="Your overall quiz score">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M5 13a7 7 0 0 1 14 0h-3l4 5 4-5h-3a9 9 0 0 0-18 0H0l4 5 4-5H5z" transform="translate(0,-2) scale(.9)"/></svg>
+        <b id="stats-pct">—</b><span class="chip-sub" id="stats-n">no practice yet</span>
+      </button>
+      <button id="btn-voice" class="icon-btn" title="Voice &amp; speed" aria-label="Choose the speaking voice">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a3.5 3.5 0 0 0-2-3.2v6.4a3.5 3.5 0 0 0 2-3.2zm-2-7v2.1a5 5 0 0 1 0 9.8V19a7 7 0 0 0 0-14z"/></svg>
+      </button>
+      <button id="btn-theme" class="icon-btn" title="Light / dark theme" aria-label="Toggle light or dark theme">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="hero">
+    <p class="hero-kicker">🎯 vocabulary quiz games</p>
+    <h1>See it. Hear it.<br>Guess it.</h1>
+    <p class="hero-sub">Seven ways to test yourself on your <b class="you">Master Vocab</b> — pick a level, pick your letters, pick a game. Wrong answers come back until you own them.</p>
+  </div>
+
+  <div id="tricky-quick" class="tricky-quick" hidden>
+    <button id="btn-tricky" class="ghost-cta">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 3l2.7 5.6 6.3.8-4.6 4.3 1.2 6.2L12 17l-5.6 2.9 1.2-6.2L3 9.4l6.3-.8z"/></svg>
+      <span id="tricky-text"><b id="tricky-n">0</b> tricky words waiting</span>
+      <span class="ghost-cta-arrow" aria-hidden="true">→</span>
+    </button>
+  </div>
+
+  <div class="step-label"><span class="step-n">1</span> Pick your level</div>
+  <div class="shelf" id="decks"></div>
+
+  <div class="letters-wrap" id="letters-wrap">
+    <div class="letters-head">
+      <span class="mini-lab">Starts with</span>
+      <span class="letters-count" id="letters-count"></span>
+    </div>
+    <div class="letters" id="letters"></div>
+    <p class="letters-note">Tap one letter or several (e.g. A + B + C) — or keep <b>ALL</b>.</p>
+  </div>
+
+  <div class="step-label"><span class="step-n">2</span> Pick your game</div>
+  <div class="games" id="games"></div>
+
+  <div class="row-opts" id="row-opts">
+    <div class="mini-opts">
+      <span class="mini-lab">Length</span>
+      <div class="chips" id="len-chips">
+        <button class="chip-ch" data-len="10" aria-pressed="true">10</button>
+        <button class="chip-ch" data-len="20" aria-pressed="false">20</button>
+        <button class="chip-ch" data-len="30" aria-pressed="false">30</button>
+        <button class="chip-ch" data-len="0" aria-pressed="false">All</button>
+      </div>
+    </div>
+    <div class="mini-opts">
+      <span class="mini-lab">Order</span>
+      <div class="chips" id="ord-chips">
+        <button class="chip-ch" data-shuf="1" aria-pressed="true">Shuffle</button>
+        <button class="chip-ch" data-shuf="0" aria-pressed="false">A → Z</button>
+      </div>
+    </div>
+  </div>
+
+  <button id="btn-start" class="cta">
+    <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+    Start quiz
+  </button>
+
+  <div class="how" aria-label="How it works">
+    <div class="how-step">
+      <span class="how-n">1</span>
+      <b>Set up</b>
+      <small>Level, letters A–Z, game, length.</small>
+    </div>
+    <div class="how-step">
+      <span class="how-n">2</span>
+      <b>Play</b>
+      <small>Answer, then read the reveal card.</small>
+    </div>
+    <div class="how-step">
+      <span class="how-n">3</span>
+      <b>Own it</b>
+      <small>Missed words loop until they stick.</small>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ PRACTICE ══════════════════ -->
+<section id="screen-practice" class="screen" hidden>
+  <header class="top prac-top">
+    <button id="btn-back" class="icon-btn" title="End game" aria-label="End game and go home">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 5l-7 7 7 7z"/></svg>
+    </button>
+    <div class="prac-mid">
+      <div class="prac-count"><b id="prac-i">1</b> / <span id="prac-n">10</span></div>
+      <div class="bar"><div class="bar-fill" id="bar-fill"></div></div>
+    </div>
+    <div class="score-chips">
+      <span class="sc ok" id="sc-ok">✓ 0</span>
+      <span class="sc bad" id="sc-bad">✗ 0</span>
+      <span class="sc time" id="sc-time" hidden>⏱ <b id="time-n">60</b></span>
+      <button id="btn-voice-p" class="icon-btn sm" title="Voice &amp; speed" aria-label="Choose the speaking voice">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a3.5 3.5 0 0 0-2-3.2v6.4a3.5 3.5 0 0 0 2-3.2zm-2-7v2.1a5 5 0 0 1 0 9.8V19a7 7 0 0 0 0-14z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- question card -->
+  <div class="q-card" id="q-card">
+    <div class="q-tag" id="q-tag">🎯 word → meaning · A1</div>
+
+    <!-- prompt variants -->
+    <div class="q-prompt" id="q-word">
+      <div class="q-word" id="qw-text">word</div>
+      <div class="q-ipa" id="qw-ipa">/ipa/</div>
+      <div class="q-pos" id="qw-pos">noun</div>
+    </div>
+    <div class="q-prompt" id="q-meaning" hidden>
+      <div class="q-mean-lab">it means…</div>
+      <div class="q-meaning" id="qm-text">meaning</div>
+      <div class="q-pos" id="qm-pos">noun</div>
+    </div>
+    <div class="q-prompt" id="q-listen" hidden>
+      <button id="btn-play" class="play-big" title="Play (Space)" aria-label="Play the word">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <div class="listen-sub">Listen… which word is it?</div>
+      <div class="listen-row">
+        <button id="btn-slow" class="pill">🐢 Slow</button>
+      </div>
+    </div>
+    <div class="q-prompt" id="q-cloze" hidden>
+      <div class="q-mean-lab">complete the example…</div>
+      <div class="q-cloze" id="qc-text">…</div>
+    </div>
+    <div class="q-prompt" id="q-scramble" hidden>
+      <div class="q-mean-lab">unscramble the word…</div>
+      <div class="scr-tiles" id="scr-tiles"></div>
+      <div class="q-meaning sm" id="scr-hint">meaning hint</div>
+      <div class="q-pos" id="scr-pos">noun</div>
+    </div>
+    <div class="q-prompt" id="q-tf" hidden>
+      <div class="q-word sm" id="tf-word">word</div>
+      <div class="q-mean-lab">does it mean…</div>
+      <div class="q-meaning" id="tf-claim">claim</div>
+    </div>
+
+    <!-- choice answers -->
+    <div class="choices" id="choices" role="group" aria-label="Answers"></div>
+
+    <!-- scramble input -->
+    <div class="scr-answer" id="scr-answer" hidden>
+      <input id="scr-in" class="scr-in" type="text" autocomplete="off" autocapitalize="none"
+        autocorrect="off" spellcheck="false" placeholder="Type the word…" aria-label="Your answer">
+      <button id="btn-scr-check" class="cta small">Check</button>
+      <button id="btn-scr-hint" class="pill">💡 Hint</button>
+    </div>
+
+    <!-- true / false -->
+    <div class="tf-row" id="tf-row" hidden>
+      <button class="tf tf-true" id="btn-true">✅ True</button>
+      <button class="tf tf-false" id="btn-false">❌ False</button>
+    </div>
+  </div>
+
+  <!-- reveal card -->
+  <div class="reveal" id="reveal" hidden>
+    <div class="verdict" id="verdict">✓</div>
+    <div class="rv-row">
+      <div>
+        <div class="rv-word" id="rv-word">word</div>
+        <div class="rv-ipa" id="rv-ipa">/ipa/ · noun</div>
+      </div>
+      <button id="btn-speak" class="play-sm" title="Say it" aria-label="Say the word">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a3.5 3.5 0 0 0-2-3.2v6.4a3.5 3.5 0 0 0 2-3.2zm-2-7v2.1a5 5 0 0 1 0 9.8V19a7 7 0 0 0 0-14z"/></svg>
+      </button>
+    </div>
+    <div class="rv-gloss" id="rv-gloss">meaning</div>
+    <div class="rv-gloss more" id="rv-gloss-more" hidden></div>
+    <button class="rv-ex" id="rv-ex" hidden title="Play this example" aria-label="Play the example sentence">
+      <span class="ex-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
+      <span id="rv-ex-text"></span>
+    </button>
+    <div class="rv-syn" id="rv-syn" hidden></div>
+    <button id="btn-next" class="cta next-cta">Next <kbd>⏎</kbd></button>
+  </div>
+</section>
+
+<!-- ══════════════════ RESULTS ══════════════════ -->
+<section id="screen-results" class="screen" hidden>
+  <header class="top">
+    <div class="brand">QuizWiz <span class="target" aria-hidden="true">🎯</span></div>
+  </header>
+
+  <div class="res-hero">
+    <div class="res-ring" id="res-ring"><b id="res-pct">0%</b></div>
+    <div class="res-title" id="res-title">Nice work!</div>
+    <div class="res-sub" id="res-sub">You got 8 of 10</div>
+    <div class="res-best" id="res-best" hidden>🏆 New best score!</div>
+  </div>
+
+  <div class="res-missed" id="res-missed" hidden>
+    <div class="missed-head">✗ Words to revisit <span id="missed-n"></span></div>
+    <div class="missed-list" id="missed-list"></div>
+    <button id="btn-again-missed" class="cta">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
+      Quiz me on these again
+    </button>
+  </div>
+
+  <div class="res-actions">
+    <button id="btn-replay" class="ghost-cta small-ghost">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+      Play again
+      <span class="ghost-cta-arrow" aria-hidden="true">→</span>
+    </button>
+    <a class="ghost-cta small-ghost" href="index.html" style="text-decoration:none">
+      <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 3l9 8h-3v9h-5v-6h-2v6H6v-9H3z"/></svg>
+      Home
+      <span class="ghost-cta-arrow" aria-hidden="true">→</span>
+    </a>
+  </div>
+</section>
+
+<!-- ══════════════════ VOICE MODAL ══════════════════ -->
+<div class="modal" id="voice-modal" hidden>
+  <div class="modal-card">
+    <div class="modal-head">
+      <b>Voice &amp; speed</b>
+      <button id="voice-close" class="icon-btn sm" aria-label="Close">
+        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 5.7 18.3 4.3 16.9 9.7 12 4.3 5.7 5.7 4.3l5.5 5.4 6.3-6.3z"/></svg>
+      </button>
+    </div>
+    <label class="field-lab" for="voice-sel">Speaking voice</label>
+    <select id="voice-sel" class="sel"></select>
+    <label class="field-lab" for="rate">Speed <span id="rate-val" class="rate-val">0.90×</span></label>
+    <input type="range" id="rate" min="0.5" max="1.2" step="0.05" value="0.9">
+    <button id="voice-test" class="pill" style="align-self:flex-start">🎧 Test voice</button>
+    <p class="modal-note">Shared with WriteRight — set it once, works everywhere.</p>
+  </div>
+</div>
+
+<script src="data.js?v=1"></script>
+<script src="app.js?v=1"></script>
+</body>
+</html>

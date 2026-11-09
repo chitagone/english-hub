@@ -131,6 +131,7 @@ body {
 .app-card.se { --ac: var(--teal); --acs: var(--teal-soft); }
 .app-card.wr { --ac: var(--violet); --acs: var(--violet-soft); }
 .app-card.qf { --ac: var(--coral); --acs: var(--coral-soft); }
+.app-card.qz { --ac: var(--amber); --acs: var(--amber-soft); }
 
 .app-ico {
   width: 52px; height: 52px;
@@ -231,9 +232,9 @@ body {
   </header>
 
   <div class="hero">
-    <p class="kicker">one home · three apps</p>
+    <p class="kicker">one home · four apps</p>
     <h1><span class="speak">Speak</span> it.<br><span class="write">Write</span> it. Own it.</h1>
-    <p>All three practice apps built from <b>your own books</b> — Master Vocab, the Conversation Pattern Books, Grammar, the Q&amp;A Pattern Book and IELTS room. Pick how you want to train today.</p>
+    <p>All four practice apps built from <b>your own books</b> — Master Vocab, the Conversation Pattern Books, Grammar, the Q&amp;A Pattern Book and IELTS room. Pick how you want to train today.</p>
   </div>
 
   <div class="apps">
@@ -285,6 +286,23 @@ body {
         <li>A1–C2 · ESL interviews · IELTS speaking</li>
       </ul>
       <span class="app-go">Start flipping →</span>
+    </a>
+
+    <a class="app-card qz" href="vocab-quiz/index.html">
+      <div class="app-ico">🎯</div>
+      <div class="app-name">QuizWiz</div>
+      <div class="app-tag">Vocabulary quiz games — A1 to C1</div>
+      <div class="app-stats">
+        <span class="st">✓ <b id="qw-acc">—</b><small>accuracy</small></span>
+        <span class="st">⚡ <b id="qw-total">0</b><small>answered</small></span>
+        <span class="st" id="qw-tricky-wrap" hidden>⭐ <b id="qw-tricky">0</b><small>tricky</small></span>
+      </div>
+      <ul class="app-feats">
+        <li>Word ⇄ meaning choices · listen &amp; guess</li>
+        <li>Missing word · scramble · true/false</li>
+        <li>60-second speed round + tricky review</li>
+      </ul>
+      <span class="app-go">Start quizzing →</span>
     </a>
   </div>
 
@@ -387,6 +405,16 @@ body {
     $('#qf-tricky-wrap').hidden = !qt;
     $('#qf-tricky').textContent = qt;
   } catch { /* storage unavailable */ }
+
+  try {
+    const qz = jparse(localStorage.getItem('quizwiz-v1'), {});
+    const tot = Number(qz.total || 0);
+    $('#qw-acc').textContent = tot ? Math.round((qz.right / tot) * 100) + '%' : '—';
+    $('#qw-total').textContent = tot.toLocaleString();
+    const zt = Object.keys(jparse(localStorage.getItem('quizwiz.tricky.v1'), {})).length;
+    $('#qw-tricky-wrap').hidden = !zt;
+    $('#qw-tricky').textContent = zt;
+  } catch { /* storage unavailable */ }
 })();
 </script>
 <script>
@@ -404,14 +432,16 @@ body {
   const seDays = Array.isArray(se.days) ? se.days : [];
   const qf = jparse(localStorage.getItem('qaflip-v1'), {});
   const qfDays = Array.isArray(qf.days) ? qf.days : [];
+  const qz = jparse(localStorage.getItem('quizwiz-v1'), {});
+  const qzDays = Array.isArray(qz.days) ? qz.days : [];
 
-  const total = (stats.total || 0) + (Number(se.total) || 0) + (Number(qf.total) || 0);
+  const total = (stats.total || 0) + (Number(se.total) || 0) + (Number(qf.total) || 0) + (Number(qz.total) || 0);
   if (!total) return;                       // nothing practised yet — hide panel
 
   const acc = stats.total ? Math.round(((stats.right || 0) / stats.total) * 100) + '%' : '—';
   const review = Object.keys(srs).length + Object.keys(se.srs || {}).length;
 
-  const daySet = new Set([...(Array.isArray(wrDays) ? wrDays : []), ...seDays, ...qfDays]);
+  const daySet = new Set([...(Array.isArray(wrDays) ? wrDays : []), ...seDays, ...qfDays, ...qzDays]);
   const iso = (d) => d.toISOString().slice(0, 10);
   let streak = 0;
   const cur = new Date();

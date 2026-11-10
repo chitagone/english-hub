@@ -213,6 +213,16 @@ function meaningsOf(w) {
   if (w.ms && w.ms.length) return w.ms;
   return [{ g: w.g || '', d: '', e: [] }];
 }
+
+/* full meaning: "gloss — definition" (plain text, for wm choices) */
+function fullMeaningOf(w) {
+  const m = meaningsOf(w)[0];
+  return m.d ? `${m.g} — ${m.d}` : (m.g || '');
+}
+
+/* full meaning as html: gloss big, definition muted after a dash */
+const fullMeaningHTML = (m) =>
+  esc(m.g || '') + (m.d ? `<span class="qm-def"> — ${esc(m.d)}</span>` : '');
 function pickDistractors(pool, correct, keyFn, n) {
   const out = [];
   const seen = new Set([String(keyFn(correct)).toLowerCase()]);
@@ -240,7 +250,11 @@ function buildQ(game, w, pool) {
   const q = { game, w, options: null, correctIdx: 0 };
   if (game === 'wm') {
     const ds = pickDistractors(pool, w, (x) => x.g, 3);
-    q.options = shuffleArr([w, ...ds]).map((x) => ({ text: x.g, word: x }));
+    q.options = shuffleArr([w, ...ds]).map((x) => ({
+      text: fullMeaningOf(x),
+      html: fullMeaningHTML(meaningsOf(x)[0]),
+      word: x,
+    }));
     q.correctIdx = q.options.findIndex((o) => o.word === w);
     return q;
   }
@@ -525,7 +539,7 @@ function loadCard() {
     $('#q-meaning').hidden = false;
     const ms = meaningsOf(w);
     S.q.meanIdx = 0;
-    $('#qm-text').textContent = ms[0].g;
+    $('#qm-text').innerHTML = fullMeaningHTML(ms[0]);
     $('#qm-pos').textContent = w.p || '';
     $('#qm-pos').hidden = !w.p;
     $('#btn-other').hidden = ms.length < 2;
@@ -539,7 +553,12 @@ function loadCard() {
     $('#q-scramble').hidden = false;
     $('#scr-tiles').innerHTML = S.q.tiles
       .map((c, i) => `<span class="scr-tile" data-idx="${i}" role="button" aria-label="letter ${c}">${c}</span>`).join('');
-    $('#scr-hint').textContent = w.g || '';
+    const ms = meaningsOf(w);
+    S.q.meanIdx = 0;
+    $('#scr-hint').textContent = ms[0].g || '';
+    $('#btn-scr-other').hidden = ms.length < 2;
+    $('#btn-scr-other').textContent = '↻ other meaning';
+    $('#btn-scr-other').disabled = false;
     $('#scr-pos').textContent = (w.p ? w.p + ' · ' : '') + `${w.t.replace(/[^a-z]/gi, '').length} letters`;
     $('#scr-in').value = '';
     $('#scr-in').disabled = false;            // re-enable after the previous card
@@ -563,8 +582,9 @@ function loadCard() {
   else if (game === 'tf') { $('#tf-row').hidden = false; }
   else {
     $('#choices').hidden = false;
+    $('#choices').classList.toggle('onecol', game === 'wm');   // full meanings need room
     $('#choices').innerHTML = S.q.options.map((o, idx) =>
-      `<button class="choice" data-idx="${idx}"><span class="c-num">${idx + 1}</span><span>${esc(o.text)}</span></button>`
+      `<button class="choice" data-idx="${idx}"><span class="c-num">${idx + 1}</span><span>${o.html || esc(o.text)}</span></button>`
     ).join('');
   }
 }
@@ -629,6 +649,7 @@ function checkScramble() {
   $('#scr-in').disabled = true;
   $('#btn-scr-check').disabled = true;
   $('#btn-scr-hint').disabled = true;
+  $('#btn-scr-other').disabled = true;
   if (!ok) $('#scr-in').style.borderColor = 'var(--coral)';
   showReveal(ok);
 }
@@ -656,9 +677,7 @@ function showReveal(ok) {
   const exBtn = $('#rv-ex');
   const renderMean = () => {
     const m = ms[mi];
-    $('#rv-gloss').textContent = `${mi + 1}. ${m.g}`;
-    $('#rv-def').hidden = !m.d;
-    $('#rv-def').textContent = m.d || '';
+    $('#rv-gloss').innerHTML = `${mi + 1}. ${fullMeaningHTML(m)}`;
     const ex = (m.e && m.e[0]) || (w.ex || [])[0];
     if (ex) {
       const hl = esc(ex).replace(new RegExp(`\\b(${reEsc(esc(w.t))})\\b`, 'i'), '<em>$1</em>');
@@ -766,8 +785,16 @@ function bindPractice() {
     const ms = meaningsOf(S.queue[S.i]);
     if (ms.length < 2) return;
     S.q.meanIdx = ((S.q.meanIdx ?? 0) + 1) % ms.length;
-    $('#qm-text').textContent = ms[S.q.meanIdx].g;
+    $('#qm-text').innerHTML = fullMeaningHTML(ms[S.q.meanIdx]);
     $('#btn-other').textContent = `↻ other meaning  ·  ${S.q.meanIdx + 1}/${ms.length}`;
+  });
+  $('#btn-scr-other').addEventListener('click', () => {
+    if (!S.q || S.answered) return;
+    const ms = meaningsOf(S.q.w);
+    if (ms.length < 2) return;
+    S.q.meanIdx = ((S.q.meanIdx ?? 0) + 1) % ms.length;
+    $('#scr-hint').textContent = ms[S.q.meanIdx].g;
+    $('#btn-scr-other').textContent = `↻ other meaning  ·  ${S.q.meanIdx + 1}/${ms.length}`;
   });
   $('#scr-tiles').addEventListener('click', (e) => {
     if (S.answered) return;

@@ -343,6 +343,7 @@ kbd {
   box-shadow: 0 2px 8px -4px rgba(42,36,23,.25);
 }
 .pill:active { transform: scale(.96); }
+.pill:disabled { opacity: .45; box-shadow: none; }
 
 /* ── how it works ───────────────────────────────────────────── */
 
@@ -451,6 +452,8 @@ kbd {
   overflow-wrap: anywhere;
 }
 .q-meaning.sm { font-size: clamp(17px, 3.4vw, 22px); color: var(--mut); font-weight: 600; font-family: var(--body); }
+.qm-def { font-family: var(--body); font-weight: 600; font-size: clamp(12px, 2vw, 14.5px); color: var(--mut); }
+.choices.onecol { grid-template-columns: 1fr; }
 .other-mean { margin-top: 12px; }
 .hint-line {
   margin-top: 12px;
@@ -462,7 +465,6 @@ kbd {
   padding: 7px 15px;
 }
 .mean-cycle { margin-top: 10px; }
-.rv-def { margin-top: 4px; font-weight: 600; font-size: 14px; color: var(--mut); line-height: 1.4; }
 .q-cloze {
   font-family: var(--disp); font-weight: 700;
   font-size: clamp(21px, 4.4vw, 30px);

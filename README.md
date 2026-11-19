@@ -1,8 +1,8 @@
-# English Hub ✿✎⇄🎯
+# English Hub ✿✎⇄🎯🔍
 
-Speaking + dictation + flip-card + quiz practice apps, built from my own English
-books (Master Vocab · Conversation Pattern Books · Grammar & Sentence Patterns ·
-Q&A Pattern Book & IELTS room).
+Speaking + dictation + flip-card + quiz + tense practice apps, built from my own
+English books (Master Vocab · Conversation Pattern Books · Grammar & Sentence
+Patterns · Q&A Pattern Book & IELTS room · 12-English-Tenses Situation Guide).
 
 - **QuizWiz 🎯** — vocabulary quiz games from Master Vocab (A1–C1 + EXTRA):
   pick your level, filter words by first letters A–Z (multi-select or ALL),
@@ -31,6 +31,15 @@ Q&A Pattern Book & IELTS room).
   tips and "don't say" warnings. IELTS cards carry the examiner/Me exchanges
   and full model talks. Decks A1–C2 · ESL interviews · IELTS Part 1 / cue
   cards / Part 3, plus a tricky-star deck. Streak + progress sync into the Hub.
+- **Tense Detective 🔍** — read the situation, pick the pattern: a real-life
+  situation appears and you choose which of the 12 tenses fits it. Four games —
+  **Situation Detective** (the main one), **Versus Duels** (classic confusing
+  pairs, 2 choices), **Signal Radar** (signal word → tense) and **Pattern Lab**
+  (formula → tense). Every reveal explains *why*, with the formula (+/−/?),
+  examples, the book's dialogues, signal words and ⚠ traps. 125 cards, level
+  filter A1–C2, tricky-star deck, keyboard play (1–4, Enter, T). Data is
+  generated from the tenses book by `build_tense_game.py`. Streak + stats sync
+  into the Hub.
 
 No server, no build step — plain HTML/CSS/JS. Progress and themes are saved in
 your browser. Installable (PWA) and works offline.

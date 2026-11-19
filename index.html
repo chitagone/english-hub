@@ -28,6 +28,8 @@
   --violet-soft: #EEE9FB;
   --amber: #8A5D0C;
   --amber-soft: #F8EED8;
+  --sky: #2B6CB0;
+  --sky-soft: #E3EEF9;
   --shadow: 0 12px 34px -16px rgba(35, 32, 27, .3);
   --disp: 'Baloo 2', 'Trebuchet MS', sans-serif;
   --body: 'Nunito', 'Segoe UI', sans-serif;
@@ -48,6 +50,8 @@
   --violet-soft: #251F3D;
   --amber: #E3B04B;
   --amber-soft: #33290F;
+  --sky: #7FB3E8;
+  --sky-soft: #142433;
   --shadow: 0 12px 34px -16px rgba(0, 0, 0, .6);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -132,6 +136,7 @@ body {
 .app-card.wr { --ac: var(--violet); --acs: var(--violet-soft); }
 .app-card.qf { --ac: var(--coral); --acs: var(--coral-soft); }
 .app-card.qz { --ac: var(--amber); --acs: var(--amber-soft); }
+.app-card.td { --ac: var(--sky, #2B6CB0); --acs: var(--sky-soft, #E3EEF9); }
 
 .app-ico {
   width: 52px; height: 52px;
@@ -232,9 +237,9 @@ body {
   </header>
 
   <div class="hero">
-    <p class="kicker">one home · four apps</p>
+    <p class="kicker">one home · five apps</p>
     <h1><span class="speak">Speak</span> it.<br><span class="write">Write</span> it. Own it.</h1>
-    <p>All four practice apps built from <b>your own books</b> — Master Vocab, the Conversation Pattern Books, Grammar, the Q&amp;A Pattern Book and IELTS room. Pick how you want to train today.</p>
+    <p>All five practice apps built from <b>your own books</b> — Master Vocab, the Conversation Pattern Books, Grammar, the Q&amp;A Pattern Book, the 12-Tenses Guide and IELTS room. Pick how you want to train today.</p>
   </div>
 
   <div class="apps">
@@ -303,6 +308,23 @@ body {
         <li>60-second speed round + tricky review</li>
       </ul>
       <span class="app-go">Start quizzing →</span>
+    </a>
+
+    <a class="app-card td" href="tense-detective/index.html">
+      <div class="app-ico">🔍</div>
+      <div class="app-name">Tense Detective</div>
+      <div class="app-tag">Read the situation → pick the pattern</div>
+      <div class="app-stats">
+        <span class="st">✓ <b id="td-acc">—</b><small>accuracy</small></span>
+        <span class="st">⚡ <b id="td-total">0</b><small>answered</small></span>
+        <span class="st" id="td-tricky-wrap" hidden>⭐ <b id="td-tricky">0</b><small>tricky</small></span>
+      </div>
+      <ul class="app-feats">
+        <li>Real-life situations from the 12-Tenses Guide</li>
+        <li>Versus duels · signal words · formula drills</li>
+        <li>Why-explanations, dialogues &amp; traps</li>
+      </ul>
+      <span class="app-go">Start investigating →</span>
     </a>
   </div>
 
@@ -415,6 +437,16 @@ body {
     $('#qw-tricky-wrap').hidden = !zt;
     $('#qw-tricky').textContent = zt;
   } catch { /* storage unavailable */ }
+
+  try {
+    const td = jparse(localStorage.getItem('tenseDet-v1'), {});
+    const tdt = Number(td.total || 0);
+    $('#td-acc').textContent = tdt ? Math.round((td.right / tdt) * 100) + '%' : '—';
+    $('#td-total').textContent = tdt.toLocaleString();
+    const tdn = (td.tricky || []).length;
+    $('#td-tricky-wrap').hidden = !tdn;
+    $('#td-tricky').textContent = tdn;
+  } catch { /* storage unavailable */ }
 })();
 </script>
 <script>
@@ -434,14 +466,16 @@ body {
   const qfDays = Array.isArray(qf.days) ? qf.days : [];
   const qz = jparse(localStorage.getItem('quizwiz-v1'), {});
   const qzDays = Array.isArray(qz.days) ? qz.days : [];
+  const td = jparse(localStorage.getItem('tenseDet-v1'), {});
+  const tdDays = Array.isArray(td.days) ? td.days : [];
 
-  const total = (stats.total || 0) + (Number(se.total) || 0) + (Number(qf.total) || 0) + (Number(qz.total) || 0);
+  const total = (stats.total || 0) + (Number(se.total) || 0) + (Number(qf.total) || 0) + (Number(qz.total) || 0) + (Number(td.total) || 0);
   if (!total) return;                       // nothing practised yet — hide panel
 
   const acc = stats.total ? Math.round(((stats.right || 0) / stats.total) * 100) + '%' : '—';
   const review = Object.keys(srs).length + Object.keys(se.srs || {}).length;
 
-  const daySet = new Set([...(Array.isArray(wrDays) ? wrDays : []), ...seDays, ...qfDays, ...qzDays]);
+  const daySet = new Set([...(Array.isArray(wrDays) ? wrDays : []), ...seDays, ...qfDays, ...qzDays, ...tdDays]);
   const iso = (d) => d.toISOString().slice(0, 10);
   let streak = 0;
   const cur = new Date();

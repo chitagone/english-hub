@@ -57,9 +57,11 @@
 
   const MODE_META = {};
   D.modes.forEach((m) => { MODE_META[m.id] = m; });
+  const LVL_RANK = {};
+  (D.levels || ['A1', 'A2', 'B1', 'B2', 'C1']).forEach((l, i) => { LVL_RANK[l] = i; });
 
   /* ── state ── */
-  let mode = null, queue = [], current = null, locked = false, roundLen = 10, lastCats = null;
+  let mode = null, queue = [], current = null, locked = false, roundLen = 10, lastCats = null, lastLvl = null;
   let roundScore = 0, roundPos = 0, roundShown = 0, roundStreak = 0, bestStreak = 0, requeued = {};
 
   const cardsOf = (m) => D.cards.filter((c) => c.mode === m);
@@ -107,7 +109,7 @@
     const cards = cardsOf(modeId);
     const counts = {};
     cards.forEach((c) => { counts[c.cat] = (counts[c.cat] || 0) + 1; });
-    const state = { sel: new Set(Object.keys(counts)), len: 10 };
+    const state = { sel: new Set(Object.keys(counts)), len: 10, lvl: (D.levels || ['C1'])[((D.levels || ['C1']).length - 1)] };
 
     const scr = $('#scr-setup');
     scr.className = 'screen ' + ({ situation: 'sit', question: 'que', makeq: 'mk' }[modeId] || '');
@@ -143,8 +145,19 @@
       lenRow.appendChild(chip);
     });
 
+    const lvlRow = $('#su-lvl-row');
+    lvlRow.innerHTML = '';
+    (D.levels || []).forEach((lvl) => {
+      const chip = document.createElement('button');
+      chip.className = 'cat-chip lvl-chip' + (lvl === state.lvl ? ' on' : '');
+      chip.textContent = (lvl === 'C1' ? 'All levels' : 'Up to ' + lvl);
+      chip.dataset.lvl = lvl;
+      chip.addEventListener('click', () => { state.lvl = lvl; refresh(); });
+      lvlRow.appendChild(chip);
+    });
+
     const go = $('#su-start');
-    const pool = () => cards.filter((c) => state.sel.has(c.cat)).length;
+    const pool = () => cards.filter((c) => state.sel.has(c.cat) && LVL_RANK[c.level] <= LVL_RANK[state.lvl]).length;
     function refresh() {
       Array.prototype.forEach.call(catRow.children, (ch) => {
         ch.classList.toggle('on', state.sel.has(ch.dataset.cat));
@@ -161,21 +174,23 @@
     go.addEventListener('click', () => {
       const p = pool();
       const n = state.len === 'All' ? p : Math.min(state.len, p);
-      startRound(modeId, n, Array.from(state.sel));
+      startRound(modeId, n, Array.from(state.sel), state.lvl);
     });
     refresh();
     show('setup');
   }
 
   /* ── round ── */
-  function startRound(m, len, cats) {
+  function startRound(m, len, cats, lvl) {
     mode = m;
     lastCats = cats || lastCats;
+    lastLvl = lvl || lastLvl;
     let cards = cardsOf(m);
     if (lastCats && lastCats.length) {
       const set = new Set(lastCats);
       cards = cards.filter((c) => set.has(c.cat));
     }
+    if (lastLvl) cards = cards.filter((c) => LVL_RANK[c.level] <= LVL_RANK[lastLvl]);
     roundLen = Math.max(1, len || 10);
     const s = store();
     const tricky = cards.filter((c) => s.tricky[c.id]);
@@ -313,7 +328,7 @@
   $('#btn-next').addEventListener('click', () => { roundPos += 1; nextCard(); });
   $('#btn-quit').addEventListener('click', () => { show('setup'); openSetup(mode); });
   $('#btn-back').addEventListener('click', () => { show('home'); renderHome(); });
-  $('#btn-again').addEventListener('click', () => startRound(mode, roundLen, lastCats));
+  $('#btn-again').addEventListener('click', () => startRound(mode, roundLen, lastCats, lastLvl));
   $('#btn-home').addEventListener('click', () => { show('home'); renderHome(); });
 
   /* ── done ── */

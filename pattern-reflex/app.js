@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  const BUILD = 'v29';   /* shown in the footer so you always know which version you're running */
+  const BUILD = 'v30';   /* shown in the footer so you always know which version you're running */
 
   const D = window.REFLEX_DATA;
   if (!D || !D.cards || !D.cards.length) {
@@ -304,11 +304,19 @@
     if (!right) {
       const w = D.tenses[tid] || {};
       const wex = (current.examples && current.examples[tid]) || w.example || '';
+      const wIdea = w.idea || '';
+      const wEg = (current.mode === 'makeq' ? (w.qexample || w.example) : w.example) || '';
       teach =
         '<div class="fb-box bad">' +
           '<span class="fb-lab">❌ Why “' + (w.name || 'that') + '” is wrong here</span>' +
           '<div class="fb-picked">You said: <span class="fb-said">“' + wex + '”</span></div>' +
           '<div class="fb-lesson">' + (w.mistake || 'Check the time words and the situation again.') + '</div>' +
+          (wIdea || wEg
+            ? '<div class="fb-when">' +
+                '<span class="fb-when-lab">✅ “' + (w.name || 'it') + '” IS correct when:</span> ' + wIdea +
+                (wEg ? '<br><span class="fb-eg">for example: “' + wEg + '”</span>' : '') +
+              '</div>'
+            : '') +
         '</div>' +
         '<div class="fb-box good">' +
           '<span class="fb-lab">✅ Why ' + t.name + ' is correct</span>' +

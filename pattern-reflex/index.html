@@ -70,16 +70,35 @@ body {
 .mode-stats { display:flex; gap:6px; flex-wrap:wrap; }
 .mst { background:var(--acs); border-radius:999px; padding:4px 10px; font-weight:800; font-size:11.5px; }
 .mst small { font-weight:700; color:var(--mut); font-size:10.5px; }
-.len-row { display:flex; gap:7px; margin-top:10px; flex-wrap:wrap; }
+.row-lab { color:var(--mut); font-size:11px; font-weight:800; margin-top:13px; text-transform:uppercase; letter-spacing:1px; }
+.cat-row { display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
+.cat-chip {
+  border:2px solid var(--line); background:var(--card); color:var(--mut);
+  border-radius:999px; padding:7px 13px; cursor:pointer; font:inherit;
+  font-weight:800; font-size:12.5px; min-height:36px;
+  transition:border-color .12s, background .12s, color .12s;
+}
+.cat-chip small { font-weight:700; opacity:.75; }
+.cat-chip.on { background:var(--ac); border-color:var(--ac); color:#fff; }
+.len-row { display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
 .len-chip {
-  flex:1 1 52px; min-width:52px; min-height:44px;
+  flex:1 1 46px; min-width:46px; min-height:42px;
   border:2px solid var(--line); background:var(--card); color:inherit;
-  border-radius:11px; padding:8px 6px; cursor:pointer; font:inherit;
-  font-family:var(--disp); font-weight:700; font-size:15px;
+  border-radius:11px; padding:8px 5px; cursor:pointer; font:inherit;
+  font-family:var(--disp); font-weight:700; font-size:14.5px;
   transition:border-color .12s, background .12s;
 }
 .len-chip:hover { border-color:var(--ac); }
-.len-chip.hot { background:var(--ac); color:#fff; border-color:var(--ac); }
+.len-chip.on { background:var(--ac); color:#fff; border-color:var(--ac); }
+.len-chip.off { opacity:.3; }
+.go-btn {
+  margin-top:14px; border:none; background:var(--ac); color:#fff;
+  font-family:var(--disp); font-weight:700; font-size:16.5px;
+  border-radius:13px; padding:12px 18px; cursor:pointer; min-height:48px; width:100%;
+  transition:transform .12s;
+}
+.go-btn:hover { transform:translateY(-1px); }
+.go-btn:active { transform:scale(.99); }
 .len-row-lab { color:var(--mut); font-size:11.5px; font-weight:700; margin-top:12px; text-transform:uppercase; letter-spacing:1px; }
 .foot { margin-top:30px; text-align:center; color:var(--mut); font-weight:600; font-size:12.5px; }
 
@@ -95,6 +114,11 @@ body {
              border-radius:999px; padding:4px 11px; margin-bottom:10px; }
 .scene-tag.sit { color:var(--teal); background:var(--teal-soft); }
 .scene-tag.que { color:var(--pink); background:var(--pink-soft); }
+.scene-tag.mk { color:#2B6CB0; background:#E3EEF9; }
+.dark .scene-tag.mk { color:#7FB3E8; background:#142433; }
+.su-head { display:flex; align-items:center; gap:14px; padding:18px 0 6px; }
+.su-emoji { font-size:40px; background:var(--pink-soft); border-radius:15px; width:62px; height:62px;
+            display:grid; place-items:center; }
 .scene-txt { font-family:var(--disp); font-weight:700; font-size:clamp(19px,3vw,23px); line-height:1.32; }
 .q-hint { color:var(--mut); font-weight:600; font-size:13.5px; margin-top:8px; }
 
@@ -172,9 +196,9 @@ body {
   .m-count, .meta { font-size:12px; }
 }
 @media (max-width:380px) {
-  .len-row { display:grid; grid-template-columns:repeat(2,1fr); }
+  .len-row { display:grid; grid-template-columns:repeat(4,1fr); }
+  .cat-row { display:grid; grid-template-columns:1fr; }
   .hero h1 { font-size:27px; }
-  .cv-foot, .foot { font-size:11.5px; }
 }
 </style>
 </head>
@@ -192,6 +216,26 @@ body {
   </div>
   <div class="mode-grid" id="mode-grid"></div>
   <p class="foot">Wrong answers come back until you nail them · progress saved on this device</p>
+</section>
+
+<section class="screen" id="scr-setup" hidden>
+  <header class="top">
+    <button class="home-link" id="btn-back" style="border:none;background:none;cursor:pointer;font:inherit">← Modes</button>
+    <span class="brand" style="font-size:19px">⚡ <span class="dot">R</span>eflex</span>
+  </header>
+  <div class="su-head">
+    <div class="su-emoji" id="su-emoji">🎭</div>
+    <div>
+      <h2 id="su-title" style="font-family:var(--disp);font-weight:800;font-size:24px"></h2>
+      <p id="su-sub" style="color:var(--mut);font-weight:600;font-size:13.5px"></p>
+    </div>
+  </div>
+  <div class="row-lab">Categories · multi-select</div>
+  <div class="cat-row" id="su-cat-row"></div>
+  <div class="row-lab">How many cards</div>
+  <div class="len-row" id="su-len-row"></div>
+  <button class="go-btn" id="su-start" style="margin-top:18px">Start →</button>
+  <p class="foot">Wrong answers come back until you nail them · tricky cards return first</p>
 </section>
 
 <section class="screen" id="scr-play" hidden>

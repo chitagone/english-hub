@@ -1,6 +1,6 @@
 /* English Hub service worker — offline app shell.
    Bump CACHE_VERSION whenever app files change to force a refresh. */
-const CACHE_VERSION = "hub-v21";
+const CACHE_VERSION = "hub-v22";
 const APP_SHELL = [
   "./",
   "index.html",

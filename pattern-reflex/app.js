@@ -5,6 +5,8 @@
 (function () {
   'use strict';
 
+  const BUILD = 'v27';   /* shown in the footer so you always know which version you're running */
+
   const D = window.REFLEX_DATA;
   if (!D || !D.cards || !D.cards.length) {
     document.body.innerHTML = '<p style="padding:40px;font-family:sans-serif">Cards didn\'t load — refresh the page once.</p>';
@@ -351,6 +353,8 @@
 
   function show(name) {
     ['home', 'setup', 'play', 'done'].forEach((n) => { $('#scr-' + n).hidden = n !== name; });
+    const v = $('#app-version');
+    if (v) v.textContent = 'Pattern Reflex ' + BUILD;
     window.scrollTo(0, 0);
   }
 

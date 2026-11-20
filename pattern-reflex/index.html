@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Pattern Reflex ⚡ — situation &amp; question → answer pattern</title>
+<meta name="description" content="A real-life situation or question appears — choose the pattern you answer with. Built from the 12 English Tenses Guide.">
+<meta name="theme-color" content="#F0EEE8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F0EEE8; --card:#FFFFFF; --ink:#23201B; --mut:#6B655A; --line:#DBD5C9;
+  --teal:#0C7265; --teal-soft:#E0F0EC; --coral:#E2562E; --coral-soft:#FCEAE3;
+  --violet:#6E50C9; --violet-soft:#EEE9FB; --pink:#C2417C; --pink-soft:#FBE7F0;
+  --ok:#1B7A43; --ok-soft:#E3F4E9; --no:#C62828; --no-soft:#FDE7E7;
+  --shadow:0 12px 34px -16px rgba(35,32,27,.3);
+  --disp:'Baloo 2','Trebuchet MS',sans-serif; --body:'Nunito','Segoe UI',sans-serif;
+}
+.dark {
+  --bg:#12100D; --card:#1C1915; --ink:#EDE9E1; --mut:#A39C8E; --line:#2C2820;
+  --teal:#41C0AA; --teal-soft:#14312B; --coral:#FF7E5F; --coral-soft:#3A211A;
+  --violet:#A18BEA; --violet-soft:#251F3D; --pink:#E77FB1; --pink-soft:#3A1F2E;
+  --ok:#5BC98A; --ok-soft:#15301F; --no:#F08A8A; --no-soft:#3A1D1D;
+  --shadow:0 12px 34px -16px rgba(0,0,0,.6);
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+[hidden] { display:none !important; }
+body {
+  font-family:var(--body); color:var(--ink); line-height:1.5;
+  background:
+    radial-gradient(1100px 460px at 88% -10%, color-mix(in srgb, var(--pink) 10%, transparent), transparent 60%),
+    radial-gradient(900px 420px at -8% 108%, color-mix(in srgb, var(--violet) 9%, transparent), transparent 55%),
+    var(--bg);
+  min-height:100vh; min-height:100dvh; -webkit-tap-highlight-color:transparent;
+}
+.screen { max-width:640px; margin:0 auto; padding:clamp(16px,3vw,28px) clamp(14px,3.5vw,24px) calc(46px + env(safe-area-inset-bottom,0px));
+          display:flex; flex-direction:column; min-height:100vh; min-height:100dvh;
+          animation:in .35s cubic-bezier(.2,.8,.3,1) both; }
+@keyframes in { from { opacity:0; transform:translateY(10px); } }
+.top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.brand { font-family:var(--disp); font-weight:800; font-size:clamp(20px,3.2vw,25px); }
+.brand .dot { color:var(--coral); }
+.icon-btn { width:40px; height:40px; display:grid; place-items:center; background:var(--card);
+            border:1.5px solid var(--line); border-radius:13px; color:inherit; cursor:pointer; font-size:17px; }
+.home-link { text-decoration:none; color:var(--mut); font-weight:700; font-size:14px; }
+.home-link:hover { color:var(--ink); }
+
+.hero { padding:clamp(20px,4.5vw,34px) 0 6px; }
+.kicker { display:inline-block; font-weight:800; font-size:12px; letter-spacing:2.5px; text-transform:uppercase;
+          color:var(--pink); background:var(--pink-soft); border-radius:999px; padding:4px 12px; }
+.hero h1 { font-family:var(--disp); font-weight:800; font-size:clamp(30px,5.8vw,42px); line-height:1.1; margin:12px 0 8px; }
+.hero h1 span { color:var(--pink); }
+.hero p { color:var(--mut); font-size:clamp(14px,1.9vw,16px); max-width:46ch; }
+.hero p b { color:var(--ink); }
+
+.mode-grid { display:grid; grid-template-columns:1fr 1fr; gap:13px; margin-top:24px; }
+.mode-card { text-align:left; display:flex; flex-direction:column; gap:6px; cursor:pointer;
+             background:var(--card); border:2px solid var(--line); border-radius:22px; padding:19px 17px 16px;
+             box-shadow:var(--shadow); color:inherit; font:inherit; transition:transform .16s, border-color .16s; }
+.mode-card:hover { transform:translateY(-3px); border-color:var(--ac); }
+.mode-card.sit { --ac:var(--teal); --acs:var(--teal-soft); }
+.mode-card.que { --ac:var(--pink); --acs:var(--pink-soft); }
+.mode-ico { width:48px; height:48px; display:grid; place-items:center; border-radius:15px; font-size:24px; background:var(--acs); }
+.mode-name { font-family:var(--disp); font-weight:800; font-size:20px; }
+.mode-desc { color:var(--mut); font-weight:600; font-size:13px; }
+.mode-stats { display:flex; gap:6px; flex-wrap:wrap; }
+.mst { background:var(--acs); border-radius:999px; padding:4px 10px; font-weight:800; font-size:11.5px; }
+.mst small { font-weight:700; color:var(--mut); font-size:10.5px; }
+.len-row { display:flex; gap:7px; margin-top:10px; flex-wrap:wrap; }
+.len-chip {
+  flex:1 1 52px; min-width:52px; min-height:44px;
+  border:2px solid var(--line); background:var(--card); color:inherit;
+  border-radius:11px; padding:8px 6px; cursor:pointer; font:inherit;
+  font-family:var(--disp); font-weight:700; font-size:15px;
+  transition:border-color .12s, background .12s;
+}
+.len-chip:hover { border-color:var(--ac); }
+.len-chip.hot { background:var(--ac); color:#fff; border-color:var(--ac); }
+.len-row-lab { color:var(--mut); font-size:11.5px; font-weight:700; margin-top:12px; text-transform:uppercase; letter-spacing:1px; }
+.foot { margin-top:30px; text-align:center; color:var(--mut); font-weight:600; font-size:12.5px; }
+
+/* ── play ── */
+.bar { height:8px; background:var(--card); border:1.5px solid var(--line); border-radius:99px; overflow:hidden; margin:14px 0 4px; }
+.bar i { display:block; height:100%; width:0%; background:linear-gradient(90deg,var(--violet),var(--pink)); transition:width .25s; }
+.meta { display:flex; justify-content:space-between; color:var(--mut); font-weight:700; font-size:12.5px; margin-bottom:12px; }
+.meta b { color:var(--ink); }
+
+.scene-card { background:var(--card); border:2px solid var(--line); border-radius:22px;
+              padding:22px 20px; box-shadow:var(--shadow); }
+.scene-tag { display:inline-block; font-weight:800; font-size:11px; letter-spacing:2px; text-transform:uppercase;
+             border-radius:999px; padding:4px 11px; margin-bottom:10px; }
+.scene-tag.sit { color:var(--teal); background:var(--teal-soft); }
+.scene-tag.que { color:var(--pink); background:var(--pink-soft); }
+.scene-txt { font-family:var(--disp); font-weight:700; font-size:clamp(19px,3vw,23px); line-height:1.32; }
+.q-hint { color:var(--mut); font-weight:600; font-size:13.5px; margin-top:8px; }
+
+.choices { display:grid; gap:9px; margin-top:15px; }
+.choice { display:flex; flex-direction:column; gap:3px; text-align:left;
+          background:var(--card); border:2px solid var(--line); border-radius:15px; padding:13px 15px;
+          color:inherit; font:inherit; cursor:pointer; transition:border-color .12s, transform .1s; }
+.choice:hover { border-color:var(--violet); }
+.choice:active { transform:scale(.99); }
+.choice .cn { font-family:var(--disp); font-weight:700; font-size:16.5px; line-height:1.25; }
+.choice .cf { color:var(--mut); font-size:13px; font-weight:600; font-style:italic; }
+.choice.correct { border-color:var(--ok); background:var(--ok-soft); }
+.choice.correct .cf { color:var(--ok); }
+.choice.wrong { border-color:var(--no); background:var(--no-soft); }
+.choice.dim { opacity:.55; }
+.choice:disabled { cursor:default; }
+
+.feedback { margin-top:14px; border-radius:18px; padding:16px 17px; border:2px solid var(--line); background:var(--card); }
+.feedback.good { border-color:var(--ok); }
+.feedback.bad { border-color:var(--no); }
+.fb-head { font-family:var(--disp); font-weight:800; font-size:17px; margin-bottom:6px; }
+.feedback.good .fb-head { color:var(--ok); }
+.feedback.bad .fb-head { color:var(--no); }
+.fb-answer { background:var(--violet-soft); border-radius:12px; padding:11px 13px; font-weight:800; font-size:16px; margin-bottom:9px;
+             display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+.fb-answer button { border:none; background:var(--violet); color:#fff; border-radius:10px; padding:8px 12px; cursor:pointer; font:inherit; font-weight:800; min-height:40px; }
+.fb-why { color:var(--mut); font-weight:600; font-size:13.5px; }
+.fb-extra { margin-top:9px; padding-top:9px; border-top:1.5px dashed var(--line);
+            color:var(--ink); font-weight:600; font-size:13px; line-height:1.45; }
+.fb-sig { color:var(--mut); font-size:12.5px; }
+.fb-name { display:inline-block; background:var(--violet); color:#fff; border-radius:8px;
+           padding:3px 10px; font-weight:800; font-size:13px; margin-bottom:6px; }
+.choice .ct { display:block; margin-top:4px; font-size:11px; font-weight:800; color:var(--mut);
+              text-transform:uppercase; letter-spacing:.6px; }
+.choice.correct .ct { color:var(--ok); }
+.choice.wrong .ct { color:var(--no); }
+.btn-primary { margin-top:15px; width:100%; border:none; border-radius:15px; padding:14px;
+               font-family:var(--disp); font-weight:800; font-size:17px; color:#fff;
+               background:linear-gradient(90deg,var(--violet),var(--pink)); cursor:pointer; }
+
+/* ── done ── */
+.done-card { background:var(--card); border:2px solid var(--line); border-radius:24px; padding:30px 24px;
+             box-shadow:var(--shadow); text-align:center; margin-top:22px; }
+.done-emoji { font-size:52px; }
+.done-card h2 { font-family:var(--disp); font-weight:800; font-size:27px; margin:10px 0 4px; }
+.done-card .big { font-family:var(--disp); font-weight:800; font-size:44px; color:var(--pink); }
+.done-stats { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin:14px 0 20px; }
+.done-actions { display:grid; gap:10px; }
+.btn-primary { min-height:48px; }
+
+/* ── responsive ── */
+@media (max-width:560px) {
+  .mode-grid { grid-template-columns:1fr; }
+  .top .brand { font-size:18px; }
+  .hero { padding-top:14px; }
+  .hero p { font-size:14px; }
+  .scene-card { padding:18px 15px; border-radius:18px; }
+  .scene-txt { font-size:18.5px; }
+  .choices { gap:8px; margin-top:12px; }
+  .choice { padding:11px 13px; }
+  .choice .cn { font-size:15.5px; }
+  .choice .cf { font-size:12.5px; }
+  .feedback { padding:13px 14px; border-radius:15px; margin-top:12px; }
+  .fb-answer { font-size:15px; padding:10px 11px; }
+  .fb-extra { font-size:12.5px; }
+  .btn-primary { margin-top:12px; }
+  .done-card { padding:24px 16px; }
+  .m-count, .meta { font-size:12px; }
+}
+@media (max-width:380px) {
+  .len-row { display:grid; grid-template-columns:repeat(2,1fr); }
+  .hero h1 { font-size:27px; }
+  .cv-foot, .foot { font-size:11.5px; }
+}
+</style>
+</head>
+<body>
+<section class="screen" id="scr-home">
+  <header class="top">
+    <a class="home-link" href="../index.html">← Hub</a>
+    <button id="btn-theme" class="icon-btn" title="Light / dark theme" aria-label="Toggle theme">◐</button>
+  </header>
+  <div class="hero">
+    <span class="kicker">no tense names · just formulas + examples</span>
+    <h1>Pattern <span>Reflex</span> ⚡</h1>
+    <p>A situation flashes — or someone asks you a question — and you pick <b>the formula you answer with</b>.
+       The tense name only appears after you choose.</p>
+  </div>
+  <div class="mode-grid" id="mode-grid"></div>
+  <p class="foot">Wrong answers come back until you nail them · progress saved on this device</p>
+</section>
+
+<section class="screen" id="scr-play" hidden>
+  <header class="top">
+    <button class="home-link" id="btn-quit" style="border:none;background:none;cursor:pointer;font:inherit">← Quit</button>
+    <span class="brand" style="font-size:19px">⚡ <span class="dot">R</span>eflex</span>
+  </header>
+  <div class="bar"><i id="prog"></i></div>
+  <div class="meta"><span id="m-count">1 / 10</span><span>🔥 <b id="m-streak">0</b></span><span>✓ <b id="m-acc">—</b></span></div>
+  <div class="scene-card">
+    <span class="scene-tag" id="scene-tag">🎭 In this situation</span>
+    <div class="scene-txt" id="scene-txt"></div>
+    <div class="q-hint" id="scene-hint">Which pattern do you use?</div>
+  </div>
+  <div class="choices" id="choices"></div>
+  <div class="feedback" id="feedback" hidden>
+    <div class="fb-head" id="fb-head"></div>
+    <div class="fb-answer"><span id="fb-answer"></span><button id="btn-speak" title="Listen">🔊</button></div>
+    <div class="fb-why" id="fb-why"></div>
+    <div class="fb-extra" id="fb-extra"></div>
+  </div>
+  <button class="btn-primary" id="btn-next" hidden>Next →</button>
+</section>
+
+<section class="screen" id="scr-done" hidden>
+  <header class="top"><span></span><button id="btn-theme2" class="icon-btn" title="Toggle theme">◐</button></header>
+  <div class="done-card">
+    <div class="done-emoji" id="d-emoji">🏆</div>
+    <h2 id="d-title">Round complete!</h2>
+    <div class="big" id="d-score">8 / 10</div>
+    <div class="done-stats" id="d-stats"></div>
+    <div class="done-actions">
+      <button class="btn-primary" id="btn-again">Play this mode again →</button>
+      <button class="btn-primary" id="btn-home" style="background:var(--card);color:var(--ink);border:2px solid var(--line)">Choose another mode</button>
+    </div>
+  </div>
+</section>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

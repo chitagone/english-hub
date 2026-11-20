@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  const BUILD = 'v30';   /* shown in the footer so you always know which version you're running */
+  const BUILD = 'v31';   /* shown in the footer so you always know which version you're running */
 
   const D = window.REFLEX_DATA;
   if (!D || !D.cards || !D.cards.length) {
@@ -200,8 +200,9 @@
     const s = store();
     s.recent = Array.isArray(s.recent) ? s.recent : [];
     const recentSet = new Set(s.recent);
-    const tricky = cards.filter((c) => s.tricky[c.id]);
-    /* unseen-first: fresh cards before recently played ones, then tricky mixed in randomly */
+    /* missed cards return — but at most HALF a round, so new cards always get in */
+    const maxTricky = Math.max(1, Math.floor(roundLen / 2));
+    const tricky = shuffle(cards.filter((c) => s.tricky[c.id])).slice(0, maxTricky);
     const fresh = shuffle(cards.filter((c) => !s.tricky[c.id] && !recentSet.has(c.id)));
     const seen = shuffle(cards.filter((c) => !s.tricky[c.id] && recentSet.has(c.id)));
     const rest = fresh.concat(seen);
@@ -275,7 +276,7 @@
       roundScore += 1;
       roundStreak += 1;
       bestStreak = Math.max(bestStreak, roundStreak);
-      if (!requeued[current.id]) delete s.tricky[current.id];
+      delete s.tricky[current.id];   /* answered right → instantly forgiven */
     } else {
       roundStreak = 0;
       s.tricky[current.id] = (s.tricky[current.id] || 0) + 1;

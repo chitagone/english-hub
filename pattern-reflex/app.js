@@ -202,6 +202,10 @@
       : (current.mode === 'makeq' ? 'Which question pattern fits this answer?' : 'Which pattern fits this moment?');
     $('#feedback').hidden = true;
     $('#btn-next').hidden = true;
+    $('#fb-head').textContent = '';
+    $('#fb-answer').textContent = '';
+    $('#fb-why').innerHTML = '';
+    $('#fb-extra').innerHTML = '';
     const s = store();
     $('#m-count').textContent = Math.min(roundPos + 1, roundLen) + ' / ' + roundLen;
     $('#m-streak').textContent = roundStreak;
@@ -263,21 +267,34 @@
     $('#fb-head').textContent = (right ? '✓ Exactly — ' : '✗ The right pattern was ') + t.name + ' · ' + fHead;
     $('#fb-answer').textContent = '“' + current.answer + '”';
 
-    /* teaching block: wrong pick = full lesson; right pick = why + the nearest trap */
+    /* teaching block: wrong pick = full labeled lesson; right pick = why + nearest trap */
     let teach;
     if (!right) {
       const w = D.tenses[tid] || {};
       const wex = (current.examples && current.examples[tid]) || w.example || '';
       teach =
-        '<div class="fb-picked">You picked: <b>' + (w.name || '?') + '</b>' + (w.formula ? ' · ' + w.formula : '') + '</div>' +
-        '<div class="fb-not">✗ Not: “' + wex + '”</div>' +
-        '<div class="fb-notwhy">🧠 Why not ' + (w.name || 'that') + '? ' + (w.mistake || '') + '</div>' +
-        '<div class="fb-rightwhy">✅ Why ' + t.name + ': ' + current.why + '</div>';
+        '<div class="fb-box bad">' +
+          '<span class="fb-lab">❌ Why “' + (w.name || 'that') + '” is wrong here</span>' +
+          '<div class="fb-picked">You said: <span class="fb-said">“' + wex + '”</span></div>' +
+          '<div class="fb-lesson">' + (w.mistake || 'Check the time words and the situation again.') + '</div>' +
+        '</div>' +
+        '<div class="fb-box good">' +
+          '<span class="fb-lab">✅ Why ' + t.name + ' is correct</span>' +
+          '<div class="fb-lesson">' + current.why + '</div>' +
+        '</div>';
     } else {
       const c = D.tenses[(D.confuse[current.tense] || [])[0]] || {};
       teach =
-        '<div class="fb-rightwhy">✅ ' + current.why + '</div>' +
-        (c.name ? '<div class="fb-warn">⚠ Watch out for ' + c.name + ': ' + (c.mistake || '') + '</div>' : '');
+        '<div class="fb-box good">' +
+          '<span class="fb-lab">✅ Correct — why</span>' +
+          '<div class="fb-lesson">' + current.why + '</div>' +
+        '</div>' +
+        (c.name
+          ? '<div class="fb-box warn">' +
+              '<span class="fb-lab">⚠ Watch out for ' + c.name + '</span>' +
+              '<div class="fb-lesson">' + (c.mistake || '') + '</div>' +
+            '</div>'
+          : '');
     }
     $('#fb-why').innerHTML = teach;
     $('#fb-extra').innerHTML =

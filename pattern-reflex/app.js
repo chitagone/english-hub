@@ -80,7 +80,7 @@
       const total = cardsOf(m.id).length;
       const trickyN = cardsOf(m.id).filter((c) => s.tricky[c.id]).length;
       const el = document.createElement('div');
-      el.className = 'mode-card ' + (m.id === 'situation' ? 'sit' : 'que');
+      el.className = 'mode-card ' + ({situation: 'sit', question: 'que', makeq: 'mk'}[m.id] || 'que');
       el.innerHTML =
         '<div class="mode-ico">' + m.emoji + '</div>' +
         '<div class="mode-name">' + m.name + '</div>' +
@@ -134,7 +134,7 @@
     $('#scene-txt').textContent = current.scene;
     $('#scene-hint').textContent = current.mode === 'question'
       ? 'How do you answer it — pick the pattern you need.'
-      : 'Which pattern fits this moment?';
+      : (current.mode === 'makeq' ? 'Which question pattern fits this answer?' : 'Which pattern fits this moment?');
     $('#feedback').hidden = true;
     $('#btn-next').hidden = true;
     const s = store();
@@ -146,12 +146,15 @@
     box.innerHTML = '';
     shuffle(choiceIds(current.tense)).forEach((tid) => {
       const t = D.tenses[tid];
-      const ex = (current.examples && current.examples[tid]) || t.example;
+      const isQ = current.mode === 'makeq';
+      const f = isQ ? (t.qformula || t.formula) : t.formula;
+      const ex = (current.examples && current.examples[tid]) ||
+                 (isQ ? (t.qexample || t.example) : t.example);
       const b = document.createElement('button');
       b.className = 'choice';
       b.dataset.tid = tid;
       b.innerHTML =
-        '<span class="cn">' + t.formula + '</span>' +
+        '<span class="cn">' + f + '</span>' +
         '<span class="cf">' + ex + '</span>';
       b.addEventListener('click', () => pick(tid, b));
       box.appendChild(b);
@@ -191,7 +194,8 @@
     });
 
     const t = D.tenses[current.tense];
-    $('#fb-head').textContent = (right ? '✓ Exactly — ' : '✗ The right pattern was ') + t.name + ' · ' + t.formula;
+    const fHead = current.mode === 'makeq' ? (t.qformula || t.formula) : t.formula;
+    $('#fb-head').textContent = (right ? '✓ Exactly — ' : '✗ The right pattern was ') + t.name + ' · ' + fHead;
     $('#fb-answer').textContent = '“' + current.answer + '”';
 
     /* teaching block: wrong pick = full lesson; right pick = why + the nearest trap */

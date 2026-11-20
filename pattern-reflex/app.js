@@ -109,6 +109,9 @@
     cards.forEach((c) => { counts[c.cat] = (counts[c.cat] || 0) + 1; });
     const state = { sel: new Set(Object.keys(counts)), len: 10 };
 
+    const scr = $('#scr-setup');
+    scr.className = 'screen ' + ({ situation: 'sit', question: 'que', makeq: 'mk' }[modeId] || '');
+
     $('#su-emoji').textContent = m.emoji;
     $('#su-title').textContent = m.name;
     $('#su-sub').textContent = cards.length + ' cards · pick your categories and round length';

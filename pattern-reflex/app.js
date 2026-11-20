@@ -162,6 +162,9 @@
       Array.prototype.forEach.call(catRow.children, (ch) => {
         ch.classList.toggle('on', state.sel.has(ch.dataset.cat));
       });
+      Array.prototype.forEach.call(lvlRow.children, (ch) => {
+        ch.classList.toggle('on', ch.dataset.lvl === state.lvl);
+      });
       const p = pool();
       Array.prototype.forEach.call(lenRow.children, (ch) => {
         const v = ch.dataset.len === 'All' ? p : Number(ch.dataset.len);

@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  const BUILD = 'v28';   /* shown in the footer so you always know which version you're running */
+  const BUILD = 'v29';   /* shown in the footer so you always know which version you're running */
 
   const D = window.REFLEX_DATA;
   if (!D || !D.cards || !D.cards.length) {
@@ -68,12 +68,12 @@
 
   const cardsOf = (m) => D.cards.filter((c) => c.mode === m);
 
-  /* exactly 4 unique pattern ids: the right one + 3 RANDOM distractors (fresh every play) */
+  /* 4 unique ids: the right one + 3 distractors — mostly its real confusions,
+     but truly randomized every play (a confuse slot can swap for any pattern) */
   function choiceIds(tid) {
-    const ids = [tid];
-    shuffle(D.confuse[tid] || []).forEach((d) => { if (ids.length < 4 && d !== tid && !ids.includes(d)) ids.push(d); });
-    shuffle(ALL_IDS.slice()).forEach((d) => { if (ids.length < 4 && !ids.includes(d)) ids.push(d); });
-    return ids.slice(0, 4);
+    const conf = shuffle((D.confuse[tid] || []).slice());
+    const others = shuffle(ALL_IDS.filter((x) => x !== tid && conf.indexOf(x) < 0));
+    return [tid].concat(conf.concat(others).slice(0, 3));
   }
 
   /* ── home: clean mode cards, one Continue button each ── */
@@ -198,9 +198,13 @@
     if (lastLvl) cards = cards.filter((c) => LVL_RANK[c.level] <= LVL_RANK[lastLvl]);
     roundLen = Math.max(1, len || 10);
     const s = store();
+    s.recent = Array.isArray(s.recent) ? s.recent : [];
+    const recentSet = new Set(s.recent);
     const tricky = cards.filter((c) => s.tricky[c.id]);
-    const rest = shuffle(cards.filter((c) => !s.tricky[c.id]));
-    /* every missed card returns, mixed randomly with fresh ones */
+    /* unseen-first: fresh cards before recently played ones, then tricky mixed in randomly */
+    const fresh = shuffle(cards.filter((c) => !s.tricky[c.id] && !recentSet.has(c.id)));
+    const seen = shuffle(cards.filter((c) => !s.tricky[c.id] && recentSet.has(c.id)));
+    const rest = fresh.concat(seen);
     const fill = rest.slice(0, Math.max(0, roundLen - tricky.length));
     queue = shuffle(tricky.concat(fill)).slice(0, roundLen);   /* wrong answers extend it again */
     roundScore = 0; roundPos = 0; roundShown = 0; roundStreak = 0; bestStreak = 0; requeued = {};
@@ -213,6 +217,14 @@
     current = queue.shift();
     locked = false;
     roundShown += 1;
+    /* remember recently played — future rounds prefer unseen cards */
+    try {
+      const s = store();
+      s.recent = Array.isArray(s.recent) ? s.recent : [];
+      if (s.recent[s.recent.length - 1] !== current.id) s.recent.push(current.id);
+      if (s.recent.length > 80) s.recent = s.recent.slice(-80);
+      save(s);
+    } catch (e) { /* storage unavailable */ }
     const m = MODE_META[current.mode];
     $('#scene-tag').textContent = m.emoji + ' ' + m.name;
     $('#scene-tag').className = 'scene-tag ' + (current.mode === 'situation' ? 'sit' : current.mode === 'makeq' ? 'mk' : 'que');

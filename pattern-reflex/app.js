@@ -193,7 +193,24 @@
     const t = D.tenses[current.tense];
     $('#fb-head').textContent = (right ? '✓ Exactly — ' : '✗ The right pattern was ') + t.name + ' · ' + t.formula;
     $('#fb-answer').textContent = '“' + current.answer + '”';
-    $('#fb-why').textContent = current.why;
+
+    /* teaching block: wrong pick = full lesson; right pick = why + the nearest trap */
+    let teach;
+    if (!right) {
+      const w = D.tenses[tid] || {};
+      const wex = (current.examples && current.examples[tid]) || w.example || '';
+      teach =
+        '<div class="fb-picked">You picked: <b>' + (w.name || '?') + '</b>' + (w.formula ? ' · ' + w.formula : '') + '</div>' +
+        '<div class="fb-not">✗ Not: “' + wex + '”</div>' +
+        '<div class="fb-notwhy">🧠 Why not ' + (w.name || 'that') + '? ' + (w.mistake || '') + '</div>' +
+        '<div class="fb-rightwhy">✅ Why ' + t.name + ': ' + current.why + '</div>';
+    } else {
+      const c = D.tenses[(D.confuse[current.tense] || [])[0]] || {};
+      teach =
+        '<div class="fb-rightwhy">✅ ' + current.why + '</div>' +
+        (c.name ? '<div class="fb-warn">⚠ Watch out for ' + c.name + ': ' + (c.mistake || '') + '</div>' : '');
+    }
+    $('#fb-why').innerHTML = teach;
     $('#fb-extra').innerHTML =
       '<span class="fb-name">' + t.name + '</span><br><b>' + t.idea + '</b><br><span class="fb-sig">🔔 ' + t.signals + '</span>';
     const fb = $('#feedback');

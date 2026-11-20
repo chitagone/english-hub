@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  const BUILD = 'v27';   /* shown in the footer so you always know which version you're running */
+  const BUILD = 'v28';   /* shown in the footer so you always know which version you're running */
 
   const D = window.REFLEX_DATA;
   if (!D || !D.cards || !D.cards.length) {
@@ -301,6 +301,10 @@
         '<div class="fb-box good">' +
           '<span class="fb-lab">✅ Why ' + t.name + ' is correct</span>' +
           '<div class="fb-lesson">' + current.why + '</div>' +
+        '</div>' +
+        '<div class="fb-box trick">' +
+          '<span class="fb-lab">🎯 The trick to notice in this question</span>' +
+          '<div class="fb-lesson">' + (current.trick || t.signals) + '</div>' +
         '</div>';
     } else {
       const c = D.tenses[(D.confuse[current.tense] || [])[0]] || {};

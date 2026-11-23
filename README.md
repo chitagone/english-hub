@@ -42,9 +42,11 @@ Patterns · Q&A Pattern Book & IELTS room · 12-English-Tenses Situation Guide).
   into the Hub.
 - **Pattern Reflex ⚡** — situation / question → answer-pattern reflex. A
   situation appears and you choose the pattern (formula + this-situation
-  example, no tense names until you answer). Three modes — **In this
+  example, no tense names until you answer). Four modes — **In this
   situation…** (500 everyday moments), **Answer this question** (200 Q → A
-  cards) and **Make the question** (100). Every situation card first explains
+  cards), **Make the question** (100) and **Active → Passive** (200: you read
+  an ACTIVE sentence and pick the passive pattern that keeps its tense — “be”
+  carries the tense, the main verb is V₃). Every situation card first explains
   the moment (who is speaking · when · what you want to say), shows the line to
   build with a gap, and hides a one-line clue behind a 💡 button; the feedback
   then explains the moment (37 situation types: habit, scene-setting, fresh

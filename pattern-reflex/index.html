@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Pattern Reflex ⚡ — situation &amp; question → answer pattern</title>
-<meta name="description" content="A real-life situation or question appears — choose the pattern you answer with. Built from the 12 English Tenses Guide.">
+<title>Pattern Reflex ⚡ — situation, question &amp; active → passive · answer pattern</title>
+<meta name="description" content="A real-life situation, a question, or an active sentence appears — choose the pattern you answer with. Built from the 12 English Tenses Guide.">
 <meta name="theme-color" content="#F0EEE8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -63,11 +63,13 @@ body {
 .mode-card.sit { --ac:var(--teal); --acs:var(--teal-soft); }
 .mode-card.que { --ac:var(--pink); --acs:var(--pink-soft); }
 .mode-card.mk { --ac:#2B6CB0; --acs:#E3EEF9; }
+.mode-card.pv { --ac:var(--violet); --acs:var(--violet-soft); }
 .dark .mode-card.mk { --ac:#7FB3E8; --acs:#142433; }
 #scr-setup { --ac:var(--violet); --acs:var(--violet-soft); }
 #scr-setup.sit { --ac:var(--teal); --acs:var(--teal-soft); }
 #scr-setup.que { --ac:var(--pink); --acs:var(--pink-soft); }
 #scr-setup.mk { --ac:#2B6CB0; --acs:#E3EEF9; }
+#scr-setup.pv { --ac:var(--violet); --acs:var(--violet-soft); }
 .dark #scr-setup.mk { --ac:#7FB3E8; --acs:#142433; }
 .mode-ico { width:48px; height:48px; display:grid; place-items:center; border-radius:15px; font-size:24px; background:var(--acs); }
 .mode-name { font-family:var(--disp); font-weight:800; font-size:20px; }
@@ -76,17 +78,40 @@ body {
 .mst { background:var(--acs); border-radius:999px; padding:4px 10px; font-weight:800; font-size:11.5px; }
 .mst small { font-weight:700; color:var(--mut); font-size:10.5px; }
 .row-lab { color:var(--mut); font-size:11px; font-weight:800; margin-top:13px; text-transform:uppercase; letter-spacing:1px; }
-/* category header: the label on the left, a "select everything" button on the right */
+/* category header: the label on the left, two small buttons on the right (add one · select everything) */
 .row-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:13px; }
 .row-head .row-lab { margin-top:0; }
-.all-btn {
+.row-tools { display:flex; gap:6px; flex-shrink:0; }
+.tool-btn {
   border:2px solid var(--line); background:var(--card); color:var(--mut);
   border-radius:999px; padding:3px 11px; cursor:pointer; font:inherit;
   font-weight:800; font-size:11.5px; text-transform:uppercase; letter-spacing:.6px; user-select:none; white-space:nowrap;
+  transition:border-color .12s, background .12s, color .12s, opacity .12s;
+}
+.tool-btn:hover { border-color:var(--ac); color:var(--ink); }
+.tool-btn.on, .tool-btn.on:hover { background:var(--ac); border-color:var(--ac); color:#fff; }
+.tool-btn .short { display:none; }
+/* the add panel: an inline box of the categories that are still off — nothing overlaps, the chips below stay visible */
+.add-panel { margin-top:9px; padding:10px 12px 12px; border:2px dashed var(--ac); border-radius:16px; background:var(--acs);
+             animation:in .2s cubic-bezier(.2,.8,.3,1) both; }
+.add-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;
+            color:var(--ac); font-size:11px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; }
+.add-close { width:28px; height:28px; border:none; border-radius:9px; background:transparent; color:inherit; cursor:pointer;
+             font:inherit; font-size:18px; line-height:1; }
+.add-close:hover { background:var(--card); }
+.add-row { display:flex; flex-wrap:wrap; gap:6px; }
+.add-chip {
+  border:2px dashed var(--ac); background:var(--card); color:var(--ink);
+  border-radius:999px; padding:7px 13px; cursor:pointer; font:inherit; text-align:center;
+  font-weight:800; font-size:12.5px; min-height:36px;
+  user-select:none; touch-action:manipulation;
   transition:border-color .12s, background .12s, color .12s;
 }
-.all-btn:hover { border-color:var(--ac); color:var(--ink); }
-.all-btn.on, .all-btn.on:hover { background:var(--ac); border-color:var(--ac); color:#fff; }
+.add-chip small { font-weight:700; opacity:.75; }
+.add-chip:hover { background:var(--ac); border-style:solid; color:#fff; }
+/* wide screens: a tidy two-column list (phones keep the natural wrap — columns would squeeze long names) */
+@media (min-width:560px) { .add-row { display:grid; grid-template-columns:1fr 1fr; } }
+.add-empty { color:var(--mut); font-weight:600; font-size:13px; line-height:1.45; }
 .cat-hint { color:var(--mut); font-weight:600; font-size:12px; margin-top:7px; }
 .cat-row { display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
 .cat-chip {
@@ -139,6 +164,7 @@ body {
 .scene-tag.sit { color:var(--teal); background:var(--teal-soft); }
 .scene-tag.que { color:var(--pink); background:var(--pink-soft); }
 .scene-tag.mk { color:#2B6CB0; background:#E3EEF9; }
+.scene-tag.pv { color:var(--violet); background:var(--violet-soft); }
 .dark .scene-tag.mk { color:#7FB3E8; background:#142433; }
 .su-head { display:flex; align-items:center; gap:14px; padding:18px 0 6px; }
 .su-emoji { font-size:40px; background:var(--pink-soft); border-radius:15px; width:62px; height:62px;
@@ -148,6 +174,7 @@ body {
 #scr-play.sit { --ac:var(--teal); --acs:var(--teal-soft); }
 #scr-play.que { --ac:var(--pink); --acs:var(--pink-soft); }
 #scr-play.mk { --ac:#2B6CB0; --acs:#E3EEF9; }
+#scr-play.pv { --ac:var(--violet); --acs:var(--violet-soft); }
 .dark #scr-play.mk { --ac:#7FB3E8; --acs:#142433; }
 /* the context: a short story — who is speaking · when · what you want to say */
 .moment { font-size:16.5px; line-height:1.55; }
@@ -265,6 +292,10 @@ body {
   .btn-primary { margin-top:12px; }
   .done-card { padding:24px 16px; }
   .m-count, .meta { font-size:12px; }
+  .tool-btn .long { display:none; }   /* the label + two buttons need the room */
+  .tool-btn .short { display:inline; }
+  .add-chip { padding-left:10px; padding-right:10px; }
+  .add-chip small { display:none; }   /* the count is on the main chip right below — without it two list items fit per row */
 }
 @media (max-width:380px) {
   .len-row { display:grid; grid-template-columns:repeat(4,1fr); }
@@ -282,8 +313,8 @@ body {
   <div class="hero">
     <span class="kicker">no tense names · just formulas + examples</span>
     <h1>Pattern <span>Reflex</span> ⚡</h1>
-    <p>A situation flashes — or someone asks you a question — and you pick <b>the formula you answer with</b>.
-       The tense name only appears after you choose.</p>
+    <p>A situation flashes, someone asks you a question, or an active sentence needs its passive —
+       and you pick <b>the formula you answer with</b>. The tense name only appears after you choose.</p>
   </div>
   <div class="mode-grid" id="mode-grid"></div>
   <p class="foot">Wrong answers come back until you nail them · progress saved on this device</p>
@@ -304,10 +335,18 @@ body {
   <p class="su-tip" id="su-tip"></p>
   <div class="row-head">
     <div class="row-lab">Categories · multi-select</div>
-    <button class="all-btn" id="su-cat-all" type="button" title="Select every category">✓ All</button>
+    <div class="row-tools">
+      <button class="tool-btn" id="su-cat-add" type="button" title="Add a category" aria-expanded="false" aria-controls="su-add-panel"><span class="long">+ Add category</span><span class="short">+ Add</span></button>
+      <button class="tool-btn" id="su-cat-all" type="button" title="Select every category">✓ All</button>
+    </div>
+  </div>
+  <div class="add-panel" id="su-add-panel" hidden>
+    <div class="add-head"><span>Add a category</span><button class="add-close" id="su-add-close" type="button" title="Close" aria-label="Close the list">×</button></div>
+    <div class="add-row" id="su-add-row"></div>
+    <p class="add-empty" id="su-add-empty" hidden></p>
   </div>
   <div class="cat-row" id="su-cat-row"></div>
-  <p class="cat-hint">Click = switch a category on / off · double-click = only that category</p>
+  <p class="cat-hint" id="su-cat-hint">Click = switch a category on / off · Right-click = only that category</p>
   <div class="row-lab">Level · up to</div>
   <div class="cat-row" id="su-lvl-row"></div>
   <div class="row-lab">How many cards</div>

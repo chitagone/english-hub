@@ -1,5 +1,6 @@
 /* Pattern Reflex ⚡ — situation / question → answer-pattern reflex.
    Home (clean cards) → setup (topic categories · multi-select + round length) → play → done.
+   Categories: click toggles one · double-click keeps only that one · the All button re-selects everything.
    Options show FORMULA + THIS-situation example (no tense names) — names appear in feedback.
    Situation cards carry a "moment" (the context: who is speaking · when · what you want to say),
    the line to build ("gap") and a "clue" behind the 💡 button; the feedback explains the moment.
@@ -7,7 +8,7 @@
 (function () {
   'use strict';
 
-  const BUILD = 'v32';   /* shown in the footer so you always know which version you're running */
+  const BUILD = 'v33';   /* shown in the footer so you always know which version you're running */
 
   const D = window.REFLEX_DATA;
   if (!D || !D.cards || !D.cards.length) {
@@ -124,7 +125,8 @@
     const cards = cardsOf(modeId);
     const counts = {};
     cards.forEach((c) => { counts[c.cat] = (counts[c.cat] || 0) + 1; });
-    const state = { sel: new Set(Object.keys(counts)), len: 10, lvl: (D.levels || ['C1'])[((D.levels || ['C1']).length - 1)] };
+    const catIds = Object.keys(counts);
+    const state = { sel: new Set(catIds), len: 10, lvl: (D.levels || ['C1'])[((D.levels || ['C1']).length - 1)] };
 
     const scr = $('#scr-setup');
     scr.className = 'screen ' + (MODE_CLASS[modeId] || '');
@@ -134,19 +136,28 @@
     $('#su-sub').textContent = cards.length + ' cards · pick your categories and round length';
     $('#su-tip').textContent = SETUP_TIP[modeId] || '';
 
+    /* the All button is a fixed element, so assign (not addEventListener) — openSetup runs again per mode */
+    const allBtn = $('#su-cat-all');
+    allBtn.onclick = () => { state.sel = new Set(catIds); refresh(); };
+
     const catRow = $('#su-cat-row');
     catRow.innerHTML = '';
+    const solo = (id) => { state.sel = new Set([id]); refresh(); };   /* double-click → only this category */
     (D.cats || []).forEach((cat) => {
       if (!counts[cat.id]) return;
       const chip = document.createElement('button');
+      chip.type = 'button';
       chip.className = 'cat-chip on';
       chip.innerHTML = cat.emoji + ' ' + esc(cat.name) + ' <small>· ' + counts[cat.id] + '</small>';
+      chip.title = 'Click: switch on / off · Double-click: only this category';
       chip.dataset.cat = cat.id;
-      chip.addEventListener('click', () => {
+      chip.addEventListener('click', (e) => {
+        if (e.detail >= 2) { solo(cat.id); return; }   /* 2nd click of a double-click (also covers touch browsers with no dblclick) */
         if (state.sel.has(cat.id)) state.sel.delete(cat.id); else state.sel.add(cat.id);
-        if (!state.sel.size) Object.keys(counts).forEach((k) => state.sel.add(k));  /* never empty */
+        if (!state.sel.size) catIds.forEach((k) => state.sel.add(k));  /* never empty */
         refresh();
       });
+      chip.addEventListener('dblclick', (e) => { e.preventDefault(); solo(cat.id); });
       catRow.appendChild(chip);
     });
 
@@ -178,6 +189,10 @@
       Array.prototype.forEach.call(catRow.children, (ch) => {
         ch.classList.toggle('on', state.sel.has(ch.dataset.cat));
       });
+      /* the All button doubles as the status light: filled = every category is selected */
+      const allOn = state.sel.size === catIds.length;
+      allBtn.classList.toggle('on', allOn);
+      allBtn.textContent = allOn ? '✓ All' : 'All';
       Array.prototype.forEach.call(lvlRow.children, (ch) => {
         ch.classList.toggle('on', ch.dataset.lvl === state.lvl);
       });
@@ -190,11 +205,13 @@
       const n = state.len === 'All' ? p : Math.min(state.len, p);
       go.textContent = 'Start · ' + n + ' cards →';
     }
-    go.addEventListener('click', () => {
+    /* assign (not addEventListener): openSetup runs again on every visit, and stacked listeners
+       made one Start click begin the round several times — throwing cards out of the round */
+    go.onclick = () => {
       const p = pool();
       const n = state.len === 'All' ? p : Math.min(state.len, p);
       startRound(modeId, n, Array.from(state.sel), state.lvl);
-    });
+    };
     refresh();
     show('setup');
   }

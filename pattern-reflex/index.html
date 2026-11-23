@@ -76,11 +76,24 @@ body {
 .mst { background:var(--acs); border-radius:999px; padding:4px 10px; font-weight:800; font-size:11.5px; }
 .mst small { font-weight:700; color:var(--mut); font-size:10.5px; }
 .row-lab { color:var(--mut); font-size:11px; font-weight:800; margin-top:13px; text-transform:uppercase; letter-spacing:1px; }
+/* category header: the label on the left, a "select everything" button on the right */
+.row-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:13px; }
+.row-head .row-lab { margin-top:0; }
+.all-btn {
+  border:2px solid var(--line); background:var(--card); color:var(--mut);
+  border-radius:999px; padding:3px 11px; cursor:pointer; font:inherit;
+  font-weight:800; font-size:11.5px; text-transform:uppercase; letter-spacing:.6px; user-select:none; white-space:nowrap;
+  transition:border-color .12s, background .12s, color .12s;
+}
+.all-btn:hover { border-color:var(--ac); color:var(--ink); }
+.all-btn.on, .all-btn.on:hover { background:var(--ac); border-color:var(--ac); color:#fff; }
+.cat-hint { color:var(--mut); font-weight:600; font-size:12px; margin-top:7px; }
 .cat-row { display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
 .cat-chip {
   border:2px solid var(--line); background:var(--card); color:var(--mut);
   border-radius:999px; padding:7px 13px; cursor:pointer; font:inherit;
   font-weight:800; font-size:12.5px; min-height:36px;
+  user-select:none; touch-action:manipulation;   /* no word-highlight or zoom while double-clicking */
   transition:border-color .12s, background .12s, color .12s;
 }
 .cat-chip small { font-weight:700; opacity:.75; }
@@ -289,8 +302,12 @@ body {
     </div>
   </div>
   <p class="su-tip" id="su-tip"></p>
-  <div class="row-lab">Categories · multi-select</div>
+  <div class="row-head">
+    <div class="row-lab">Categories · multi-select</div>
+    <button class="all-btn" id="su-cat-all" type="button" title="Select every category">✓ All</button>
+  </div>
   <div class="cat-row" id="su-cat-row"></div>
+  <p class="cat-hint">Click = switch a category on / off · double-click = only that category</p>
   <div class="row-lab">Level · up to</div>
   <div class="cat-row" id="su-lvl-row"></div>
   <div class="row-lab">How many cards</div>

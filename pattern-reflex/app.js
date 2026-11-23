@@ -1,11 +1,13 @@
 /* Pattern Reflex ⚡ — situation / question → answer-pattern reflex.
    Home (clean cards) → setup (topic categories · multi-select + round length) → play → done.
    Options show FORMULA + THIS-situation example (no tense names) — names appear in feedback.
+   Situation cards carry a "moment" (the context: who is speaking · when · what you want to say),
+   the line to build ("gap") and a "clue" behind the 💡 button; the feedback explains the moment.
    Progress in localStorage (patternReflex-v1); theme shared with the Hub. */
 (function () {
   'use strict';
 
-  const BUILD = 'v31';   /* shown in the footer so you always know which version you're running */
+  const BUILD = 'v32';   /* shown in the footer so you always know which version you're running */
 
   const D = window.REFLEX_DATA;
   if (!D || !D.cards || !D.cards.length) {
@@ -18,12 +20,15 @@
   const KEY = 'patternReflex-v1';
   const ALL_IDS = Object.keys(D.tenses);
   const LENGTHS = [10, 20, 30, 50, 100, 150, 'All'];
+  const MODE_CLASS = { situation: 'sit', question: 'que', makeq: 'mk' };
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   /* ── storage ── */
   const jparse = (v, d) => { try { return JSON.parse(v) ?? d; } catch { return d; } };
   const store = () => jparse(localStorage.getItem(KEY), { answered: 0, correct: 0, tricky: {}, days: [] });
   const save = (s) => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch {} };
   function markDay(s) {
+    s.days = Array.isArray(s.days) ? s.days : [];          /* progress saved before “days” existed */
     const t = new Date().toISOString().slice(0, 10);
     if (!s.days.includes(t)) s.days.push(t);
   }
@@ -62,6 +67,14 @@
   const LVL_RANK = {};
   (D.levels || ['A1', 'A2', 'B1', 'B2', 'C1']).forEach((l, i) => { LVL_RANK[l] = i; });
 
+  /* how to read a card — one line per mode, shown on the setup screen */
+  const SETUP_TIP = {
+    situation: '📖 Each card first explains the moment — who is speaking, when, and what you want to say. ' +
+                'Then you pick the pattern for your line. Not sure? Tap 💡 Hint.',
+    question: '💬 Someone asks you a question. Pick the pattern you need for your answer.',
+    makeq: '❓ You see the answer. Pick the question pattern that produced it.',
+  };
+
   /* ── state ── */
   let mode = null, queue = [], current = null, locked = false, roundLen = 10, lastCats = null, lastLvl = null;
   let roundScore = 0, roundPos = 0, roundShown = 0, roundStreak = 0, bestStreak = 0, requeued = {};
@@ -85,11 +98,11 @@
       const cards = cardsOf(m.id);
       const trickyN = cards.filter((c) => s.tricky[c.id]).length;
       const el = document.createElement('div');
-      el.className = 'mode-card ' + ({situation: 'sit', question: 'que', makeq: 'mk'}[m.id] || 'que');
+      el.className = 'mode-card ' + (MODE_CLASS[m.id] || 'que');
       el.innerHTML =
         '<div class="mode-ico">' + m.emoji + '</div>' +
-        '<div class="mode-name">' + m.name + '</div>' +
-        '<div class="mode-desc">' + m.desc + '</div>' +
+        '<div class="mode-name">' + esc(m.name) + '</div>' +
+        '<div class="mode-desc">' + esc(m.desc) + '</div>' +
         '<div class="mode-stats">' +
           '<span class="mst">' + cards.length + ' <small>cards</small></span>' +
           '<span class="mst">✓ ' + pct(s) + ' <small>accuracy</small></span>' +
@@ -114,11 +127,12 @@
     const state = { sel: new Set(Object.keys(counts)), len: 10, lvl: (D.levels || ['C1'])[((D.levels || ['C1']).length - 1)] };
 
     const scr = $('#scr-setup');
-    scr.className = 'screen ' + ({ situation: 'sit', question: 'que', makeq: 'mk' }[modeId] || '');
+    scr.className = 'screen ' + (MODE_CLASS[modeId] || '');
 
     $('#su-emoji').textContent = m.emoji;
     $('#su-title').textContent = m.name;
     $('#su-sub').textContent = cards.length + ' cards · pick your categories and round length';
+    $('#su-tip').textContent = SETUP_TIP[modeId] || '';
 
     const catRow = $('#su-cat-row');
     catRow.innerHTML = '';
@@ -126,7 +140,7 @@
       if (!counts[cat.id]) return;
       const chip = document.createElement('button');
       chip.className = 'cat-chip on';
-      chip.innerHTML = cat.emoji + ' ' + cat.name + ' <small>· ' + counts[cat.id] + '</small>';
+      chip.innerHTML = cat.emoji + ' ' + esc(cat.name) + ' <small>· ' + counts[cat.id] + '</small>';
       chip.dataset.cat = cat.id;
       chip.addEventListener('click', () => {
         if (state.sel.has(cat.id)) state.sel.delete(cat.id); else state.sel.add(cat.id);
@@ -227,12 +241,36 @@
       save(s);
     } catch (e) { /* storage unavailable */ }
     const m = MODE_META[current.mode];
+    const isSituation = current.mode === 'situation';
+    $('#scr-play').className = 'screen ' + (MODE_CLASS[current.mode] || '');
     $('#scene-tag').textContent = m.emoji + ' ' + m.name;
-    $('#scene-tag').className = 'scene-tag ' + (current.mode === 'situation' ? 'sit' : current.mode === 'makeq' ? 'mk' : 'que');
+    $('#scene-tag').className = 'scene-tag ' + (MODE_CLASS[current.mode] || 'que');
+
+    /* the situation: with context → the moment (a short story); without → the bare scene text */
+    const hasMoment = isSituation && !!current.moment;
     $('#scene-txt').textContent = current.scene;
+    $('#scene-txt').hidden = hasMoment;
+    $('#scene-moment').textContent = hasMoment ? current.moment : '';
+    $('#scene-moment').hidden = !hasMoment;
+
+    /* the line the learner builds: “The wind ______ when we heard a loud crash.” */
+    const hasGap = !!current.gap;
+    $('#task-lab').textContent = current.mode === 'question' ? 'Your answer' : 'Your line';
+    $('#scene-gap').innerHTML = hasGap
+      ? current.gap.split('_____').map(esc).join('<span class="blank" aria-label="gap"></span>')
+      : '';
+    $('#scene-task').hidden = !hasGap;
+
     $('#scene-hint').textContent = current.mode === 'question'
       ? 'How do you answer it — pick the pattern you need.'
-      : (current.mode === 'makeq' ? 'Which question pattern fits this answer?' : 'Which pattern fits this moment?');
+      : (current.mode === 'makeq' ? 'Which question pattern fits this answer?'
+         : (hasGap ? 'Which pattern completes your line?' : 'Which pattern fits this moment?'));
+
+    /* the clue waits behind the hint button — context first, help only if wanted */
+    $('#btn-hint').hidden = !(isSituation && current.clue);
+    $('#hint-box').hidden = true;
+    $('#hint-box').textContent = '';
+
     $('#feedback').hidden = true;
     $('#btn-next').hidden = true;
     $('#fb-head').textContent = '';
@@ -256,8 +294,8 @@
       b.className = 'choice';
       b.dataset.tid = tid;
       b.innerHTML =
-        '<span class="cn">' + f + '</span>' +
-        '<span class="cf">' + ex + '</span>';
+        '<span class="cn">' + esc(f) + '</span>' +
+        '<span class="cf">' + esc(ex) + '</span>';
       b.addEventListener('click', () => pick(tid, b));
       box.appendChild(b);
     });
@@ -284,12 +322,14 @@
     }
     markDay(s);
     save(s);
+    $('#btn-hint').hidden = true;          /* the clue now lives in the explanation */
+    $('#hint-box').hidden = true;
 
     /* paint the options: correct = green, your wrong pick = red, rest dimmed — names revealed */
     $$('.choice').forEach((b) => {
       b.disabled = true;
       const tn = D.tenses[b.dataset.tid] ? D.tenses[b.dataset.tid].name : '';
-      b.innerHTML = b.innerHTML + '<span class="ct">' + tn + '</span>';
+      b.innerHTML = b.innerHTML + '<span class="ct">' + esc(tn) + '</span>';
       if (b.dataset.tid === current.tense) b.classList.add('correct');
       else if (b === btn) b.classList.add('wrong');
       else b.classList.add('dim');
@@ -300,50 +340,62 @@
     $('#fb-head').textContent = (right ? '✓ Exactly — ' : '✗ The right pattern was ') + t.name + ' · ' + fHead;
     $('#fb-answer').textContent = '“' + current.answer + '”';
 
-    /* teaching block: wrong pick = full labeled lesson; right pick = why + nearest trap */
+    /* teaching block — situation cards explain the moment (story + rule), then the clue,
+       then why the pick doesn't fit; the other modes keep the rule + trick */
+    const box = (cls, lab, body) =>
+      '<div class="fb-box ' + cls + '"><span class="fb-lab">' + lab + '</span><div class="fb-lesson">' + body + '</div></div>';
+    const type = (current.type && D.types && D.types[current.type]) || null;
+    const story = (label) =>
+      box(right ? 'good' : 'trick', label + esc(type.name),
+          esc(type.story) + '<div class="fb-rule">Rule: ' + esc(current.why) + '</div>');
     let teach;
     if (!right) {
       const w = D.tenses[tid] || {};
       const wex = (current.examples && current.examples[tid]) || w.example || '';
-      const wIdea = w.idea || '';
       const wEg = (current.mode === 'makeq' ? (w.qexample || w.example) : w.example) || '';
-      teach =
+      /* why the pick fails THIS moment: the type's own words, else the pattern's general rule */
+      const whyNot = (type && type.why_not && type.why_not[tid]) || w.mistake || 'Check the time words and the situation again.';
+      teach = (type ? story('🎬 The moment — ') : '') +
+        (type ? box('clue', '🔑 The clue in this situation', esc(current.clue)) : '') +
         '<div class="fb-box bad">' +
-          '<span class="fb-lab">❌ Why “' + (w.name || 'that') + '” is wrong here</span>' +
-          '<div class="fb-picked">You said: <span class="fb-said">“' + wex + '”</span></div>' +
-          '<div class="fb-lesson">' + (w.mistake || 'Check the time words and the situation again.') + '</div>' +
-          (wIdea || wEg
+          '<span class="fb-lab">❌ Why “' + esc(w.name || 'that') + '” is wrong here</span>' +
+          '<div class="fb-picked">You said: <span class="fb-said">“' + esc(wex) + '”</span></div>' +
+          '<div class="fb-lesson">' + esc(whyNot) + '</div>' +
+          (w.idea || wEg
             ? '<div class="fb-when">' +
-                '<span class="fb-when-lab">✅ “' + (w.name || 'it') + '” IS correct when:</span> ' + wIdea +
-                (wEg ? '<br><span class="fb-eg">for example: “' + wEg + '”</span>' : '') +
+                '<span class="fb-when-lab">✅ “' + esc(w.name || 'it') + '” IS correct when:</span> ' + esc(w.idea) +
+                (wEg ? '<br><span class="fb-eg">for example: “' + esc(wEg) + '”</span>' : '') +
               '</div>'
             : '') +
         '</div>' +
-        '<div class="fb-box good">' +
-          '<span class="fb-lab">✅ Why ' + t.name + ' is correct</span>' +
-          '<div class="fb-lesson">' + current.why + '</div>' +
-        '</div>' +
-        '<div class="fb-box trick">' +
-          '<span class="fb-lab">🎯 The trick to notice in this question</span>' +
-          '<div class="fb-lesson">' + (current.trick || t.signals) + '</div>' +
-        '</div>';
+        (type ? '' :
+          box('good', '✅ Why ' + esc(t.name) + ' is correct', esc(current.why)) +
+          box('trick', '🎯 The trick to notice in this question', esc(current.trick || t.signals)));
     } else {
-      const c = D.tenses[(D.confuse[current.tense] || [])[0]] || {};
-      teach =
-        '<div class="fb-box good">' +
-          '<span class="fb-lab">✅ Correct — why</span>' +
-          '<div class="fb-lesson">' + current.why + '</div>' +
-        '</div>' +
-        (c.name
-          ? '<div class="fb-box warn">' +
-              '<span class="fb-lab">⚠ Watch out for ' + c.name + '</span>' +
-              '<div class="fb-lesson">' + (c.mistake || '') + '</div>' +
-            '</div>'
-          : '');
+      const trapId = (D.confuse[current.tense] || [])[0];
+      const c = D.tenses[trapId] || {};
+      teach = type
+        ? story('✅ Correct — the moment · ') +
+          box('clue', '🔑 The clue in this situation', esc(current.clue)) +
+          (c.name
+            ? box('warn', '⚠ Watch out for ' + esc(c.name),
+                  esc((type.why_not && type.why_not[trapId]) || c.mistake || ''))
+            : '')
+        : box('good', '✅ Correct — why', esc(current.why)) +
+          (c.name
+            ? box('warn', '⚠ Watch out for ' + esc(c.name), esc(c.mistake || ''))
+            : '');
     }
     $('#fb-why').innerHTML = teach;
-    $('#fb-extra').innerHTML =
-      '<span class="fb-name">' + t.name + '</span><br><b>' + t.idea + '</b><br><span class="fb-sig">🔔 ' + t.signals + '</span>';
+
+    /* pattern notes live behind a disclosure, so the explanation stays scannable */
+    const notes = (p) =>
+      '<div class="fb-note"><span class="fb-name">' + esc(p.name) + '</span> <b>' + esc(p.idea) + '</b>' +
+      '<br><span class="fb-sig">🔔 ' + esc(p.signals) + '</span></div>';
+    const picked = D.tenses[tid];
+    $('#fb-extra').innerHTML = notes(t) + (!right && picked && tid !== current.tense ? notes(picked) : '');
+    $('#fb-more').open = false;
+
     const fb = $('#feedback');
     fb.hidden = false;
     fb.className = 'feedback ' + (right ? 'good' : 'bad');
@@ -355,6 +407,12 @@
     if (fb.scrollIntoView) fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
+  $('#btn-hint').addEventListener('click', () => {
+    if (!current || !current.clue) return;
+    $('#hint-box').innerHTML = '<b>🔑 Clue</b> ' + esc(current.clue);
+    $('#hint-box').hidden = false;
+    $('#btn-hint').hidden = true;
+  });
   $('#btn-next').addEventListener('click', () => { roundPos += 1; nextCard(); });
   $('#btn-quit').addEventListener('click', () => { show('setup'); openSetup(mode); });
   $('#btn-back').addEventListener('click', () => { show('home'); renderHome(); });

@@ -132,6 +132,27 @@ body {
             display:grid; place-items:center; }
 .scene-txt { font-family:var(--disp); font-weight:700; font-size:clamp(19px,3vw,23px); line-height:1.32; }
 .q-hint { color:var(--mut); font-weight:600; font-size:13.5px; margin-top:8px; }
+#scr-play.sit { --ac:var(--teal); --acs:var(--teal-soft); }
+#scr-play.que { --ac:var(--pink); --acs:var(--pink-soft); }
+#scr-play.mk { --ac:#2B6CB0; --acs:#E3EEF9; }
+.dark #scr-play.mk { --ac:#7FB3E8; --acs:#142433; }
+/* the context: a short story — who is speaking · when · what you want to say */
+.moment { font-size:16.5px; line-height:1.55; }
+/* the line the learner builds: “The wind ______ when we heard a loud crash.” */
+.task { margin-top:14px; padding-top:12px; border-top:1.5px dashed var(--line); }
+.task-lab { display:block; font-size:11px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase;
+            color:var(--mut); margin-bottom:3px; }
+.task-line { font-family:var(--disp); font-weight:700; font-size:18.5px; line-height:1.5; }
+.blank { display:inline-block; min-width:84px; height:.9em; vertical-align:-4px; border-bottom:3px solid var(--ac,var(--teal)); }
+/* the clue waits behind a button — context first, help only if wanted */
+.hint-btn { margin-top:10px; width:100%; min-height:42px; border:2px dashed var(--line); background:transparent; color:var(--mut);
+            border-radius:13px; font:inherit; font-weight:800; font-size:13.5px; cursor:pointer;
+            transition:border-color .12s, color .12s; }
+.hint-btn:hover { border-color:var(--ac,var(--teal)); color:var(--ink); }
+.hint-box { margin-top:10px; padding:11px 14px; border-radius:13px; background:var(--acs,var(--teal-soft));
+            font-weight:600; font-size:14px; line-height:1.45; }
+.hint-box b { color:var(--ac,var(--teal)); }
+.su-tip { margin-top:12px; padding:10px 13px; border-radius:12px; background:var(--acs); font-weight:600; font-size:13.5px; line-height:1.45; }
 
 .choices { display:grid; gap:9px; margin-top:15px; }
 .choice { display:flex; flex-direction:column; gap:3px; text-align:left;
@@ -177,8 +198,19 @@ body {
            border:1.5px dashed var(--ok); color:var(--ink); font-weight:600; }
 .fb-when-lab { font-weight:800; color:var(--ok); }
 .fb-eg { color:var(--mut); font-style:italic; font-size:12.5px; }
-.fb-extra { margin-top:9px; padding-top:9px; border-top:1.5px dashed var(--line);
-            color:var(--ink); font-weight:600; font-size:13px; line-height:1.45; }
+.fb-box.clue { background:color-mix(in srgb, var(--teal) 11%, transparent); border-left:4px solid var(--teal); }
+.fb-box.clue .fb-lab { color:var(--teal); }
+.fb-rule { margin-top:7px; color:var(--mut); font-weight:700; font-size:12.5px; }
+/* pattern notes sit behind a disclosure, so the explanation stays scannable */
+.fb-more { margin-top:10px; padding-top:9px; border-top:1.5px dashed var(--line); }
+.fb-more summary { cursor:pointer; list-style:none; font-weight:800; font-size:13px; color:var(--mut); }
+.fb-more summary::-webkit-details-marker { display:none; }
+.fb-more summary::before { content:'▸ '; }
+.fb-more[open] summary::before { content:'▾ '; }
+.fb-more[open] summary { margin-bottom:7px; }
+.fb-extra { color:var(--ink); font-weight:600; font-size:13px; line-height:1.45; }
+.fb-note + .fb-note { margin-top:9px; padding-top:8px; border-top:1.5px dashed var(--line); }
+.fb-note b { color:var(--ink); }
 .fb-sig { color:var(--mut); font-size:12.5px; }
 .fb-name { display:inline-block; background:var(--violet); color:#fff; border-radius:8px;
            padding:3px 10px; font-weight:800; font-size:13px; margin-bottom:6px; }
@@ -208,6 +240,8 @@ body {
   .hero p { font-size:14px; }
   .scene-card { padding:18px 15px; border-radius:18px; }
   .scene-txt { font-size:18.5px; }
+  .moment { font-size:15.5px; }
+  .task-line { font-size:17px; }
   .choices { gap:8px; margin-top:12px; }
   .choice { padding:11px 13px; }
   .choice .cn { font-size:15.5px; }
@@ -254,6 +288,7 @@ body {
       <p id="su-sub" style="color:var(--mut);font-weight:600;font-size:13.5px"></p>
     </div>
   </div>
+  <p class="su-tip" id="su-tip"></p>
   <div class="row-lab">Categories · multi-select</div>
   <div class="cat-row" id="su-cat-row"></div>
   <div class="row-lab">Level · up to</div>
@@ -274,14 +309,24 @@ body {
   <div class="scene-card">
     <span class="scene-tag" id="scene-tag">🎭 In this situation</span>
     <div class="scene-txt" id="scene-txt"></div>
-    <div class="q-hint" id="scene-hint">Which pattern do you use?</div>
+    <div class="moment" id="scene-moment" hidden></div>
+    <div class="task" id="scene-task" hidden>
+      <span class="task-lab" id="task-lab">Your line</span>
+      <div class="task-line" id="scene-gap"></div>
+    </div>
+    <div class="q-hint" id="scene-hint">Which pattern fits this moment?</div>
   </div>
+  <button class="hint-btn" id="btn-hint" type="button" hidden>💡 Need a hint?</button>
+  <div class="hint-box" id="hint-box" hidden></div>
   <div class="choices" id="choices"></div>
   <div class="feedback" id="feedback" hidden>
     <div class="fb-head" id="fb-head"></div>
-    <div class="fb-answer"><span id="fb-answer"></span><button id="btn-speak" title="Listen">🔊</button></div>
+    <div class="fb-answer"><span id="fb-answer"></span><button id="btn-speak" title="Listen" aria-label="Listen">🔊</button></div>
     <div class="fb-why" id="fb-why"></div>
-    <div class="fb-extra" id="fb-extra"></div>
+    <details class="fb-more" id="fb-more">
+      <summary>More about these patterns</summary>
+      <div class="fb-extra" id="fb-extra"></div>
+    </details>
   </div>
   <button class="btn-primary" id="btn-next" hidden>Next →</button>
 </section>

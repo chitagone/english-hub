@@ -11,7 +11,7 @@
 (function () {
   'use strict';
 
-  const BUILD = 'v34';   /* shown in the footer so you always know which version you're running */
+  const BUILD = 'v35';   /* shown in the footer so you always know which version you're running */
 
   const D = window.REFLEX_DATA;
   if (!D || !D.cards || !D.cards.length) {

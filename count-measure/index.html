@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Tense Detective 🔍 — read the situation, pick the pattern</title>
-<meta name="description" content="A situation appears — which tense pattern fits? Train all 12 English tenses with real-life situations, versus duels, signal words and formula drills. Built from the Situation-Based Tenses Guide.">
-<meta name="theme-color" content="#E3EEF9">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='28' height='28' rx='8' fill='%232B6CB0'/%3E%3Ccircle cx='14' cy='14' r='6' fill='none' stroke='%23fff' stroke-width='2.6'/%3E%3Cpath d='M19 19l6 6' stroke='%23fff' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>Count &amp; Measure 🧮 — countable &amp; uncountable nouns</title>
+<meta name="description" content="Countable or uncountable? Sort nouns, pick a / an / some, much or many, a few or a little, measure words and is / are, find the mistake — ten games and a speed round, with the why and examples you can hear.">
+<meta name="theme-color" content="#E3F3E4">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='28' height='28' rx='8' fill='%231E7D3F'/%3E%3Ccircle cx='10' cy='16' r='3.3' fill='%23fff'/%3E%3Ccircle cx='16' cy='16' r='3.3' fill='%23fff'/%3E%3Ccircle cx='22' cy='16' r='3.3' fill='%23fff'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -18,9 +18,9 @@
 <!-- ══════════════════ HOME ══════════════════ -->
 <section id="screen-home" class="screen">
   <header class="top">
-    <div class="brand">Tense Detective <span class="glyph" aria-hidden="true">🔍</span></div>
+    <div class="brand">Count &amp; Measure <span class="glyph" aria-hidden="true">🧮</span></div>
     <div class="top-right">
-      <a class="icon-btn" href="../index.html" title="English Hub" aria-label="Back to the English Hub" style="text-decoration:none">
+      <a class="icon-btn" href="../index.html" title="English Hub" aria-label="Back to the English Hub">
         <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 3l9 8h-3v9h-5v-6h-2v6H6v-9H3z"/></svg>
       </a>
       <button id="btn-streak" class="chip" title="Your practice streak">
@@ -34,49 +34,83 @@
   </header>
 
   <div class="hero">
-    <p class="hero-kicker">situation → pattern training</p>
-    <h1>Read the situation.<br><span class="accent">Spot</span> the tense.</h1>
-    <p class="hero-sub">A real-life situation appears — you choose the <b class="accent">exact pattern</b> that fits it. All <b>12 tenses</b>, straight from your Situation-Based Guide.</p>
+    <p class="hero-kicker">countable &amp; uncountable nouns</p>
+    <h1>Count it —<br>or measure it?</h1>
+    <p class="hero-sub">A noun appears. Can you count it — <b>one apple, two apples</b>? Or can you only measure it — <b>a glass of water</b>? Ten games make the choice automatic.</p>
+  </div>
+
+  <!-- the one picture the game is about: things you count one by one · an amount you can only measure -->
+  <div class="demo" role="img" aria-label="Countable nouns are counted one by one: one apple, two apples, three apples. Uncountable nouns can only be measured: a glass of milk, some milk.">
+    <div class="demo-side">
+      <div class="demo-lab">Countable — you count it</div>
+      <div class="demo-stage" aria-hidden="true">
+        <span class="dc-item" style="--i:0"><i>1</i>🍎</span>
+        <span class="dc-item" style="--i:1"><i>2</i>🍎</span>
+        <span class="dc-item" style="--i:2"><i>3</i>🍎</span>
+      </div>
+      <div class="demo-line" aria-hidden="true">one apple, two apples, <b>three apples</b></div>
+    </div>
+    <div class="demo-side">
+      <div class="demo-lab">Uncountable — you measure it</div>
+      <div class="demo-stage" aria-hidden="true">
+        <div class="demo-glass"><i class="dg-fill"></i></div>
+      </div>
+      <div class="demo-line" aria-hidden="true"><b>a glass of milk</b>, some milk</div>
+    </div>
   </div>
 
   <div class="modes-head">
     <div>
       <div class="modes-label">Choose your game</div>
-      <p class="modes-sub">4 ways to train · 125 cards</p>
+      <p class="modes-sub" id="modes-sub">6 games</p>
     </div>
     <div class="modes-total" id="home-total">—</div>
   </div>
 
   <div class="modes" id="modes"></div>
 
+  <button id="btn-speed" class="speed-card" type="button" title="60 seconds, questions from all ten games">
+    <span class="sc-ico" aria-hidden="true">⚡</span>
+    <span class="sc-txt">
+      <span class="sc-name">Speed round</span>
+      <span class="sc-desc">60 seconds · questions from every game</span>
+    </span>
+    <span class="sc-best" id="speed-best">no score yet</span>
+  </button>
+
   <div id="tricky-quick" class="tricky-quick" hidden>
-    <button id="btn-tricky-deck" class="ghost-cta">
+    <button id="btn-tricky-deck" class="ghost-cta" type="button">
       <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 3l2.7 5.6 6.3.8-4.6 4.3 1.2 6.2L12 17l-5.6 2.9 1.2-6.2L3 9.4l6.3-.8z"/></svg>
       <span id="tricky-text"><b id="tricky-n">0</b> tricky cards waiting</span>
       <span class="ghost-cta-arrow" aria-hidden="true">→</span>
     </button>
   </div>
 
+  <details class="rules" id="rules">
+    <summary>The rules at a glance</summary>
+    <div id="rules-list"></div>
+  </details>
+
   <div class="how" aria-label="How it works">
     <div class="how-step">
       <span class="how-n">1</span>
-      <b>Read the situation</b>
-      <small>A scene from real life.</small>
+      <b>See the noun</b>
+      <small>An apple — or a sentence.</small>
     </div>
     <div class="how-step">
       <span class="how-n">2</span>
-      <b>Pick the pattern</b>
-      <small>Which of the 12 tenses fits?</small>
+      <b>Count it or measure it?</b>
+      <small>Pick what fits.</small>
     </div>
     <div class="how-step">
       <span class="how-n">3</span>
       <b>Learn the why</b>
-      <small>Formula, example, dialogue &amp; traps.</small>
+      <small>Rule, examples, mistakes.</small>
     </div>
   </div>
 
-  <p class="home-note"><span aria-hidden="true">🔍</span> Everything stays on this device — no account, no tracking.</p>
-  <footer class="foot"><span>Investigate until it's automatic</span></footer>
+  <p class="home-note"><span aria-hidden="true">🧮</span> Everything stays on this device — no account, no tracking.</p>
+  <footer class="foot"><span>Practise until it's automatic</span></footer>
 </section>
 
 <!-- ══════════════════ PICKER ══════════════════ -->
@@ -92,6 +126,8 @@
     <div class="deck-top-actions"></div>
   </header>
 
+  <div class="rule-box" id="picker-rule"></div>
+
   <p class="picker-sub">Choose the levels to practise — <b>all are selected by default.</b></p>
 
   <div class="band-list" id="band-list"></div>
@@ -99,9 +135,9 @@
   <div class="len-row">
     <span class="len-lab">Session length</span>
     <div class="len-pills" id="len-pills">
-      <button class="pill-btn len-pill on" data-len="10">10</button>
-      <button class="pill-btn len-pill" data-len="20">20</button>
-      <button class="pill-btn len-pill" data-len="0">All</button>
+      <button class="pill-btn len-pill on" data-len="10" type="button">10</button>
+      <button class="pill-btn len-pill" data-len="20" type="button">20</button>
+      <button class="pill-btn len-pill" data-len="0" type="button">All</button>
     </div>
   </div>
 
@@ -121,68 +157,62 @@
       <b id="play-title">Game</b>
     </div>
     <div class="deck-top-actions">
-      <button id="btn-shuffle" class="icon-btn" title="Shuffle remaining cards">
-        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M17 4h5v5M22 4l-6.5 6.5M7 20H2v-5M2 20l6.5-6.5M17 20h5v-5M22 20L2 4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
+      <span id="time-chip" class="chip time" hidden>⏱ <b id="time-n">60</b><span class="chip-sub">s</span></span>
     </div>
   </header>
 
   <div class="deck-progress">
     <div class="dp-track"><i id="dp-fill"></i></div>
-    <span class="dp-label"><b id="dp-done">0</b>/<span id="dp-total">0</span></span>
+    <span class="dp-label" id="dp-label"><b id="dp-done">0</b>/<span id="dp-total">0</span></span>
     <span class="dp-score"><b id="dp-right">0</b>✓ <b id="dp-wrong">0</b>✗</span>
   </div>
 
   <div class="qcard" id="qcard">
     <div class="q-head">
-      <span id="q-mode" class="mode-pill">🎭 Situation</span>
-      <span id="q-level" class="lvl-pill">A1</span>
+      <span id="q-mode" class="mode-pill">🧮 Sort it</span>
+      <span id="q-level" class="lvl-pill">A1 – A2</span>
     </div>
-    <div id="q-scene" class="q-scene"></div>
-    <p class="q-ask">Which pattern fits this situation?</p>
-    <div id="q-choices" class="choices" role="group" aria-label="Choose the tense pattern"></div>
+    <div id="q-prompt" class="q-prompt"></div>
+    <p class="q-ask" id="q-ask"></p>
+    <div id="q-choices" class="choices" role="group" aria-label="Choose your answer"></div>
   </div>
 
-  <div id="reveal" class="reveal" hidden></div>
+  <div id="speed-fb" class="speed-fb" role="status" hidden></div>
+  <div id="reveal" class="reveal" role="status" hidden></div>
 
-  <div class="controls">
-    <button id="btn-tricky" class="ctl ctl-tricky" title="Mark as tricky (T)">
+  <div class="controls" id="controls">
+    <button id="btn-tricky" class="ctl ctl-tricky" type="button" title="Mark as tricky (T)">
       <span aria-hidden="true">★</span> Tricky
     </button>
-    <button id="btn-next" class="ctl ctl-next" disabled>
+    <button id="btn-next" class="ctl ctl-next" type="button" disabled>
       Next <span aria-hidden="true">→</span>
     </button>
   </div>
-  <p class="kbd-hint">1–4 = answer · Enter = next · T = tricky</p>
+  <p class="kbd-hint" id="kbd-hint">1–3 = answer · Enter = next · T = tricky</p>
 </section>
 
 <!-- ══════════════════ DONE ══════════════════ -->
 <section id="screen-done" class="screen screen-done" hidden>
   <header class="top">
-    <div class="brand">Tense Detective <span class="glyph" aria-hidden="true">🔍</span></div>
-    <a class="icon-btn" href="../index.html" title="English Hub" aria-label="Back to the English Hub" style="text-decoration:none">
+    <div class="brand">Count &amp; Measure <span class="glyph" aria-hidden="true">🧮</span></div>
+    <a class="icon-btn" href="../index.html" title="English Hub" aria-label="Back to the English Hub">
       <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 3l9 8h-3v9h-5v-6h-2v6H6v-9H3z"/></svg>
     </a>
   </header>
   <div class="done-card">
-    <div class="done-emoji" aria-hidden="true">🔍</div>
-    <h2>Case closed!</h2>
-    <p class="done-sub" id="done-sub">You played every card.</p>
-    <div class="done-tiles">
-      <div class="done-tile"><b id="done-acc">0%</b><span>accuracy</span></div>
-      <div class="done-tile"><b id="done-right">0</b><span>right ✓</span></div>
-      <div class="done-tile"><b id="done-wrong">0</b><span>wrong ✗</span></div>
-      <div class="done-tile"><b id="done-tricky">0</b><span>tricky ★</span></div>
-    </div>
+    <div class="done-emoji" id="done-emoji" aria-hidden="true">🧮</div>
+    <h2 id="done-title">Sorted!</h2>
+    <p class="done-sub" id="done-sub"></p>
+    <div class="done-tiles" id="done-tiles"></div>
     <div class="done-actions">
-      <button id="btn-again" class="big-cta">Play again</button>
-      <button id="btn-mistakes" class="ghost-cta2" hidden>Redo mistakes (<span id="mistakes-n">0</span>)</button>
-      <button id="btn-done-back" class="ghost-cta2">Back to games</button>
+      <button id="btn-again" class="big-cta" type="button">Play again</button>
+      <button id="btn-mistakes" class="ghost-cta2" type="button" hidden>Redo mistakes (<span id="mistakes-n">0</span>)</button>
+      <button id="btn-done-back" class="ghost-cta2" type="button">Back to games</button>
     </div>
   </div>
 </section>
 
-<script src="data.js"></script>
+<script src="data.js?v=1"></script>
 <script src="app.js?v=1"></script>
 </body>
 </html>

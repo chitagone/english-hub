@@ -1,7 +1,7 @@
 {
-  "name": "English Hub — speaking & dictation practice",
+  "name": "English Hub — English practice games",
   "short_name": "English Hub",
-  "description": "SpeakEasy speaking practice, WriteRight dictation and QA Flip pattern cards, built from your own English books.",
+  "description": "WriteRight dictation, QuizWiz vocabulary quizzes, Pattern Reflex tense drills and Count & Measure noun games, built from your own English books.",
   "start_url": "index.html",
   "scope": ".",
   "display": "standalone",

@@ -1,6 +1,6 @@
 /* English Hub service worker — offline app shell.
    Bump CACHE_VERSION whenever app files change to force a refresh. */
-const CACHE_VERSION = "hub-v35";
+const CACHE_VERSION = "hub-v37";
 const APP_SHELL = [
   "./",
   "index.html",
@@ -10,26 +10,17 @@ const APP_SHELL = [
   "dictation/style.css?v=10",
   "dictation/app.js?v=16",
   "dictation/data.js?v=4",
-  "speaking-practice/index.html",
-  "speaking-practice/style.css?v=12",
-  "speaking-practice/app.js?v=14",
-  "speaking-practice/data.js",
-  "speaking-practice/quiz-data.js?v=5",
-  "qa-flip/index.html",
-  "qa-flip/style.css?v=4",
-  "qa-flip/app.js?v=4",
-  "qa-flip/data.js",
   "vocab-quiz/index.html",
   "vocab-quiz/style.css?v=7",
   "vocab-quiz/app.js?v=9",
   "vocab-quiz/data.js?v=2",
-  "tense-detective/index.html",
-  "tense-detective/style.css?v=1",
-  "tense-detective/app.js?v=2",
-  "tense-detective/data.js?v=2",
   "pattern-reflex/index.html",
   "pattern-reflex/app.js?v=19",
   "pattern-reflex/data.js?v=15",
+  "count-measure/index.html",
+  "count-measure/style.css?v=1",
+  "count-measure/app.js?v=1",
+  "count-measure/data.js?v=1",
 ];
 
 self.addEventListener("install", (e) => {
